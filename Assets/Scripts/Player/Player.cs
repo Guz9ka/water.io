@@ -44,7 +44,7 @@ public class Player : MonoBehaviour
 
     protected virtual void Move() { }
     protected virtual void CheckPlayerState() { }
-    protected virtual void RunForward() { }
+    protected virtual void Run() { }
     protected virtual void Fall() { }
     protected virtual void Jump() { }
     protected virtual void Crawl() { }

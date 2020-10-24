@@ -16,12 +16,4 @@ public class CoinBehaviour : MonoBehaviour
     {
         gameObject.transform.rotation = Quaternion.Euler(0, gameObject.transform.rotation.y * rotationSpeed, 0);
     }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if(other.tag == "Player")
-        {
-            Destroy(gameObject);
-        }
-    }
 }

@@ -32,12 +32,15 @@ public class PlayerBehaviour : Player, IJumpable
 
     [Header("Смена состояний игрока")]
     public float reviveDelay;
+
     public delegate void PlayerDeath();
     public event PlayerDeath OnPlayerDied;
+
     public delegate void PlayerRevive();
-    public event PlayerDeath OnPlayerRevive;
+    public event PlayerRevive OnPlayerRevive;
+
     public delegate void PlayerVictory();
-    public event PlayerDeath OnPlayerWin;
+    public event PlayerVictory OnPlayerWin;
 
     private void Start()
     {
@@ -62,10 +65,11 @@ public class PlayerBehaviour : Player, IJumpable
     {
         if (playerState == PlayerState.Alive)
         {
-            GroundCheck(); // observing
-            CheckInput(); // for
-            //SlideCheck(); // player actions
+            // observing for player actions
+            GroundCheck(); 
+            CheckInput();
 
+            // execute movement tasks
             Move();
         }
     }
@@ -128,11 +132,12 @@ public class PlayerBehaviour : Player, IJumpable
 
     protected override void Move()
     {
-        RunForward();
+        Run();
 
         switch (playerAction)
         {
             case PlayerCurrentAction.Run:
+                //выполняется всегда
                 break;
             case PlayerCurrentAction.Fall:
                 Fall();
@@ -150,7 +155,7 @@ public class PlayerBehaviour : Player, IJumpable
     }
     #endregion
 
-    #region Действия игрока
+    #region Возможные действия игрока
     protected override void Jump() 
     {
         velocity.y = Mathf.Sqrt(playerJumpHeight * -2 * gravity);
@@ -170,7 +175,7 @@ public class PlayerBehaviour : Player, IJumpable
         playerAction = PlayerCurrentAction.Run;
     }
 
-    protected override void RunForward()
+    protected override void Run()
     {
         float moveSides = joystick.Horizontal * joystickSensitivity;
 
@@ -263,9 +268,4 @@ public class PlayerBehaviour : Player, IJumpable
 
         player.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
-
-    //void GameStateHandler()
-    //{
-
-    //}
 }

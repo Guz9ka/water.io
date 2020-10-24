@@ -24,9 +24,10 @@ public class PositionRestore : MonoBehaviour
 
     private void Update()
     {
-        CheckWriteState();
+        CheckWriteState(); //тут проверяется нужно ли записать позицию, и, если нужно, то она записывается в память
     }
 
+    #region Запись позиции
     void CheckWriteState()
     {
         foreach (string Key in writedPositions.Keys)
@@ -42,18 +43,20 @@ public class PositionRestore : MonoBehaviour
     {
         writedPositions[key].writeAvailable = false;
         writedPositions[key].lastWritedPosition = player.transform.position;
-        
+
         yield return new WaitForSeconds(writedPositions[key].rewriteDelay);
         writedPositions[key].writeAvailable = true;
     }
+    #endregion
 
+    #region Восстановление позиции
     public Vector3 RestorePosition(string tag)
     {
-        Invoke("WritePosition", 0.1f);
+        Invoke("RestartPositionRecord", 0.1f);
         return writedPositions[tag].lastWritedPosition;
     }
 
-    void WritePosition()
+    void RestartPositionRecord()
     {
         foreach (string Key in writedPositions.Keys)
         {
@@ -61,6 +64,7 @@ public class PositionRestore : MonoBehaviour
             StartCoroutine(WritePosition(Key));
         }
     }
+    #endregion
 
     public void OnGameEnd()
     {
