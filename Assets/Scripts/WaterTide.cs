@@ -4,17 +4,20 @@ using UnityEngine;
 
 public enum WaterState
 {
-    Static,
+    Low,
+    High,
     Raising,
     Lowering
 }
 
 public class WaterTide : MonoBehaviour
 {
+    public static WaterTide singleton { get; private set; }
+
     [Header("Параметры прилива")]
     public GameObject water;
 
-    public WaterState waterState;
+    public static WaterState waterState;
     public float tideHeight;
     public float tideLow;
     public float tideSpeed;
@@ -26,10 +29,10 @@ public class WaterTide : MonoBehaviour
 
     //[Header("Событие прилива")]
     public delegate void Tide();
-    public event Tide OnTideStart;
+    public event Tide OnTideRaising;
 
     public delegate void TideEnd();
-    public event TideEnd OnTideEnd;
+    public event TideEnd OnTideLowering;
 
     [Header("Таймер")]
     Timer timer;
@@ -38,13 +41,15 @@ public class WaterTide : MonoBehaviour
 
     private void Start()
     {
+        singleton = this;
+
         waterState = new WaterState();
 
         timerCallback = new TimerCallback(TimerCallback);
         timer = new Timer(timerCallback, null, 0, 1000);
 
-        OnTideStart += StartTide;
-        OnTideEnd += EndTide;
+        OnTideRaising += StartTide;
+        OnTideLowering += EndTide;
     }
 
     private void Update()
@@ -57,8 +62,6 @@ public class WaterTide : MonoBehaviour
     {
         switch (waterState)
         {
-            case WaterState.Static:
-                break;
             case WaterState.Raising:
                 WaterRaising();
                 break;
@@ -66,24 +69,22 @@ public class WaterTide : MonoBehaviour
                 WaterLowering();
                 break;
         }
-
-        //if()
     }
 
     private void CheckTideTime()
     {
         if (tideTime.Count > tideCurrentNumber)
         {
-            if (timeCurrent > tideTime[tideCurrentNumber])
+            if (timeCurrent > tideTime[tideCurrentNumber] && waterState != WaterState.Raising)
             {
-                OnTideStart.Invoke();
+                OnTideRaising.Invoke();
             }
         }
         if (tideLowTime.Count > tideLowCurrentNumber)
         {
-            if (timeCurrent > tideLowTime[tideLowCurrentNumber])
+            if (timeCurrent > tideLowTime[tideLowCurrentNumber] && waterState != WaterState.Lowering)
             {
-                OnTideEnd.Invoke();
+                OnTideLowering.Invoke();
             }
         }
     }
@@ -108,7 +109,7 @@ public class WaterTide : MonoBehaviour
 
         water.transform.position = waterPosition;
         
-        if (water.transform.position.y >= tideHeight - 0.1f) { waterState = WaterState.Static; }
+        if (water.transform.position.y >= tideHeight - 0.1f) { waterState = WaterState.High; }
     }
 
     void WaterLowering()
@@ -119,7 +120,7 @@ public class WaterTide : MonoBehaviour
         
         water.transform.position = waterPosition;
 
-        if (water.transform.position.y <= tideLow + 0.1f) { waterState = WaterState.Static; }
+        if (water.transform.position.y <= tideLow + 0.1f) { waterState = WaterState.Low; }
     }
 
     void TimerCallback(object time)

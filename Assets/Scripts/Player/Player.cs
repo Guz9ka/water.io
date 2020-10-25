@@ -21,7 +21,6 @@ public class Player : MonoBehaviour
 {
     [Header("Параметры игрока")]
     public GameObject playerSkin;
-    protected GameObject player;
 
     public string DeathReason;
 
@@ -30,13 +29,9 @@ public class Player : MonoBehaviour
     public float playerSlideSpeed;
     public float playerJumpHeight;
 
-    public float playerRotationSpeed;
+    //public float playerRotationSpeed;
 
     public float moveAfterWin;
-
-    [Header("Положения и состояния игрока")]
-    public PlayerState playerState;
-    public PlayerCurrentAction playerAction;
 
     [Header("Рассчет физики")]
     protected const float gravity = -9.81f;
@@ -50,7 +45,7 @@ public class Player : MonoBehaviour
     protected virtual void Crawl() { }
     protected virtual void PlayerDied() { }
     protected virtual void PlayerRevived() { }
-    protected virtual void PlayerWinned() { }
+    protected virtual void PlayerWon() { }
     public virtual void SlideOnSlide(Vector3 playerRotation) { }
     public virtual void JumpOnTrampoline(float jumpForce) { }
 }

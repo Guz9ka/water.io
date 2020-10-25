@@ -11,8 +11,13 @@ enum SwipeState
 
 public class PlayerBehaviour : Player, IJumpable
 {
+    [Header("Положения и состояния игрока")]
+    public PlayerState playerState;
+    public PlayerCurrentAction playerAction;
+
     [Header("Локальные параметры игрока")]
     public CharacterController controller;
+    protected GameObject player;
 
     [Header("Параметры джойстика")]
     public FloatingJoystick joystick;
@@ -49,12 +54,11 @@ public class PlayerBehaviour : Player, IJumpable
         DeathReason = null;
         playerState = new PlayerState();
         playerAction = new PlayerCurrentAction();
-        playerState = PlayerState.Alive;
 
         //Events
         OnPlayerDied += PlayerDied;
         OnPlayerRevive += PlayerRevived;
-        OnPlayerWin += PlayerWinned;
+        OnPlayerWin += PlayerWon;
 
         ResetCharacteristics();
 
@@ -137,7 +141,7 @@ public class PlayerBehaviour : Player, IJumpable
         switch (playerAction)
         {
             case PlayerCurrentAction.Run:
-                //выполняется всегда
+                //выполняется всегда, когда игрок жив
                 break;
             case PlayerCurrentAction.Fall:
                 Fall();
@@ -249,7 +253,7 @@ public class PlayerBehaviour : Player, IJumpable
         ResetCharacteristics();
     }
 
-    protected override void PlayerWinned()
+    protected override void PlayerWon()
     {
         playerState = PlayerState.Win;
 
@@ -258,6 +262,17 @@ public class PlayerBehaviour : Player, IJumpable
         playerMoveSpeed = 0;
         joystickSensitivity = 0;
         player.transform.rotation = Quaternion.Euler(Vector3.zero);
+    }
+    #endregion
+
+    #region Реакция на смену состояния игры
+    public void OnGameStart()
+    {
+    }
+
+    public void OnGameEnd()
+    {
+
     }
     #endregion
 

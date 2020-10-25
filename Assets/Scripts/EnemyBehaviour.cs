@@ -2,21 +2,44 @@
 using System.Collections.Generic;
 using System.Runtime.Remoting.Messaging;
 using UnityEngine;
+using UnityEngine.AI;
 
-public class EnemyBehaviour : Player
+public enum EnemyCurrentTask
 {
-    public PlayerCurrentAction enemyAction;
+    FindTrampoline,
+    RunToTrampoline,
+    RunForward,
+    RunToEnd
+}
+
+public class EnemyBehaviour : Player, IJumpable
+{
     private GameObject enemy;
 
-    [Header("Смена состояний врага")]
+    [Header("ИИ противника")]
+    public NavMeshAgent agent;
+    public GameObject endZone;
+
+    public float moveForwardDistance;
     public CharacterController controller;
 
-    [Header("Проверка наличия земли под врагом")]
+    private Vector3 destination;
+
+    [Header("Поиск ближайшего батута")] //когда состояние воды - прилив
+    public float searchRadius;
+    private int trampolineMask;
+
+    [Header("Проверка наличия земли под противником")]
     public Transform groundChecker;
     public float groudCheckDistance;
     private LayerMask groundMask;
 
-    [Header("Смена состояний врага")]
+    [Header("Состояния противника")]
+    public PlayerCurrentAction enemyAction;
+    public EnemyCurrentTask enemyTask;
+    public PlayerState enemyState;
+
+    [Header("Смена состояний противника")]
     public float reviveDelay;
 
     public delegate void EnemyDeath();
@@ -31,22 +54,67 @@ public class EnemyBehaviour : Player
     void Start()
     {
         enemy = gameObject;   
+        DeathReason = null;
+        WaterTide.singleton.OnTideRaising += ChooseEnemyTask;
+        WaterTide.singleton.OnTideLowering += ChooseEnemyTask;
+
+        OnEnemyDied += EnemyDied;
+        OnEnemyRevive += EnemyRevived;
+        OnEnemyWin += EnemyWon;
+
         enemyAction = new PlayerCurrentAction();
+        enemyState = new PlayerState();
+        enemyTask = new EnemyCurrentTask();
+
+        groundMask = LayerMask.GetMask("Ground");
+        trampolineMask = LayerMask.GetMask("Trampoline");
     }
 
     void FixedUpdate()
     {
+        CheckGround();
+        OnGameStart();
+        if(enemyState == PlayerState.Alive)
+        {
+            CheckTrampoline();
+            Move();
+        }
+    }
 
+    void ChooseEnemyTask() // вызывается при смене состояния прилива
+    {
+        switch (WaterTide.waterState)
+        {
+            case WaterState.Raising: // двигаться к батуту
+                if (enemyTask != EnemyCurrentTask.FindTrampoline) { enemyTask = EnemyCurrentTask.FindTrampoline; }
+                break;
+            case WaterState.High: //просто двигаться вперед
+                enemyTask = EnemyCurrentTask.RunForward;
+                break;
+            case WaterState.Lowering: // бежать к концу
+                enemyTask = EnemyCurrentTask.RunToEnd;
+                break;
+            case WaterState.Low: // бежать к концу
+                enemyTask = EnemyCurrentTask.RunToEnd;
+                break;
+        }
+    }
+
+    #region Действия противника
+    private Vector3 FindTrampoline()
+    {
+        Vector3 searchPosition = new Vector3(enemy.transform.position.x, enemy.transform.position.y, enemy.transform.position.z + searchRadius);
+        var hitInfo = Physics.OverlapSphere(searchPosition, searchRadius, trampolineMask);
+
+        return hitInfo[0].gameObject.transform.position;
     }
 
     protected override void Move()
     {
-        Run();
-
         switch (enemyAction)
         {
             case PlayerCurrentAction.Run:
-                //игрок всегда бежит вперед
+                // Направление дается из SetDestination, это же просто означает что игрок готов к любому действию
                 break;
             case PlayerCurrentAction.Fall:
                 Fall();
@@ -54,16 +122,37 @@ public class EnemyBehaviour : Player
             case PlayerCurrentAction.Jump:
                 Jump();
                 break;
+            case PlayerCurrentAction.Slide:
+                // Вызывается из EnemyCollisionReactor
+                break;
             case PlayerCurrentAction.Crawl:
                 Crawl();
                 break;
-            case PlayerCurrentAction.Slide:
-                //выполняется через скрипт горки
+        }
+
+        Vector3 enemyPosition = enemy.transform.position;
+
+        switch (enemyTask)
+        {
+            case EnemyCurrentTask.RunToEnd:
+                destination = endZone.transform.position;
+                break;
+            case EnemyCurrentTask.FindTrampoline:
+                destination = FindTrampoline();
+                enemyTask = EnemyCurrentTask.RunToTrampoline;
+                break;
+            case EnemyCurrentTask.RunToTrampoline:
+                // Ничего не происходит, т.к. противник уже выполнил FindTrampoline() и начал двигаться к нему.
+                // Так нужно, чтобы игрок каждый раз не искал заново батут, а лишь продолжал двигаться к уже назначеной цели
+                break;
+            case EnemyCurrentTask.RunForward:
+                destination = new Vector3(enemyPosition.x, enemyPosition.y, enemyPosition.z + moveForwardDistance);
                 break;
         }
+
+        agent.SetDestination(destination);
     }
 
-    #region Действия противника
     protected override void Jump()
     {
         velocity.y = Mathf.Sqrt(playerJumpHeight * -2 * gravity);
@@ -77,19 +166,15 @@ public class EnemyBehaviour : Player
     protected override void Crawl()
     {
         enemyAction = PlayerCurrentAction.Crawl;
-        controller.height = 1.2f;
         //задержка
 
         enemyAction = PlayerCurrentAction.Run;
     }
 
-    protected override void Run()
-    {
-    }
-
     protected override void Fall()
     {
         velocity.y += gravity * Time.deltaTime;
+
         controller.Move(velocity * Time.deltaTime);
     }
 
@@ -108,26 +193,37 @@ public class EnemyBehaviour : Player
         enemyAction = PlayerCurrentAction.Slide;
 
         enemy.transform.rotation = Quaternion.Euler(PlayerRotation);
-
-        //добавить визуальный поворот скина
     }
     #endregion
 
-    void GroundCheck()
+    #region Проверка состояний противника
+    void CheckGround()
     {
         bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
 
-        if (isGrounded == false && playerAction != PlayerCurrentAction.Jump)
+        if (isGrounded == false && enemyAction != PlayerCurrentAction.Jump)
         {
             enemyAction = PlayerCurrentAction.Fall;
         }
-        else if (isGrounded == true && playerAction == PlayerCurrentAction.Jump || playerAction == PlayerCurrentAction.Fall)
+        else if (isGrounded == true && enemyAction == PlayerCurrentAction.Jump || enemyAction == PlayerCurrentAction.Fall)
         {
             enemyAction = PlayerCurrentAction.Run;
         }
     }
 
-    #region Триггеры смены состояний игрока
+    void CheckTrampoline()
+    {
+        bool OnTrampoline = Physics.CheckSphere(groundChecker.position, groudCheckDistance, trampolineMask);
+        //Debug.Log("tramp " + OnTrampoline);
+        Debug.Log(enemyTask);
+        if(OnTrampoline && enemyTask == EnemyCurrentTask.RunToTrampoline)
+        {
+            enemyTask = EnemyCurrentTask.RunForward;
+        }
+    }
+    #endregion
+
+    #region Триггеры смены состояний противника
     public void TriggerDeathEvent(string deathReason)
     {
         DeathReason = deathReason;
@@ -148,11 +244,11 @@ public class EnemyBehaviour : Player
     #region Ответ на смену состояний игрока
     protected void EnemyDied()
     {
-        playerState = PlayerState.Dead;
+        enemyState = PlayerState.Dead;
 
         ResetCharacteristics();
 
-        player.transform.position = player.GetComponent<PositionRestore>().RestorePosition(DeathReason);
+        enemy.transform.position = enemy.GetComponent<PositionRestore>().RestorePosition(DeathReason);
         DeathReason = null;
 
         Invoke("TriggerReviveEvent", reviveDelay);
@@ -160,23 +256,32 @@ public class EnemyBehaviour : Player
 
     protected void EnemyRevived()
     {
-        playerState = PlayerState.Alive;
+        enemyState = PlayerState.Alive;
 
         ResetCharacteristics();
     }
 
-    protected void EnemyWinned()
+    protected void EnemyWon()
     {
-        playerState = PlayerState.Win;
-
-        controller.Move(new Vector3(0, 0, Mathf.Lerp(0, moveAfterWin, playerMoveSpeed * Time.deltaTime)));
-
-        
+        enemyState = PlayerState.Win;
+        //после победы игрок должен пройти немного вперед
     }
     #endregion
 
     private void ResetCharacteristics()
     {
-        player.transform.rotation = Quaternion.Euler(Vector3.zero);
+        enemy.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
+
+    #region Реакция на смену состояния игры
+    public void OnGameStart()
+    {
+        ChooseEnemyTask();
+    }
+
+    public void OnGameEnd()
+    {
+
+    }
+    #endregion
 }
