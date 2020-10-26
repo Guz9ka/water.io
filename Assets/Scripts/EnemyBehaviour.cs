@@ -86,7 +86,7 @@ public class EnemyBehaviour : Player, IJumpable
         switch (WaterTide.waterState)
         {
             case WaterState.Raising: // двигаться к батуту
-                if (enemyTask != EnemyCurrentTask.FindTrampoline) { enemyTask = EnemyCurrentTask.FindTrampoline; }
+                if (enemyTask != EnemyCurrentTask.FindTrampoline && enemyTask != EnemyCurrentTask.RunToTrampoline && enemyTask != EnemyCurrentTask.RunForward) { enemyTask = EnemyCurrentTask.FindTrampoline; }
                 break;
             case WaterState.High: //просто двигаться вперед
                 enemyTask = EnemyCurrentTask.RunForward;
@@ -215,9 +215,9 @@ public class EnemyBehaviour : Player, IJumpable
     {
         bool OnTrampoline = Physics.CheckSphere(groundChecker.position, groudCheckDistance, trampolineMask);
         //Debug.Log("tramp " + OnTrampoline);
-        Debug.Log(enemyTask);
         if(OnTrampoline && enemyTask == EnemyCurrentTask.RunToTrampoline)
         {
+            Debug.Log("huh");
             enemyTask = EnemyCurrentTask.RunForward;
         }
     }
