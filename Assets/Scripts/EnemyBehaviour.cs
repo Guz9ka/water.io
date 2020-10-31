@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
+//using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -10,6 +10,15 @@ public enum EnemyCurrentTask
     RunToTrampoline,
     RunForward,
     RunToEnd
+}
+
+enum EnemyCurrentAction
+{
+    Run, //стандартное состояние, когда нет других команд
+    Fall, //игрок в этом состоянии, когда падает вниз
+    Jump,
+    Slide,
+    Crawl
 }
 
 public class EnemyBehaviour : Player, IJumpable
@@ -35,7 +44,7 @@ public class EnemyBehaviour : Player, IJumpable
     private LayerMask groundMask;
 
     [Header("Состояния противника")]
-    public PlayerCurrentAction enemyAction;
+    private EnemyCurrentAction enemyAction;
     public EnemyCurrentTask enemyTask;
     public PlayerState enemyState;
 
@@ -62,7 +71,7 @@ public class EnemyBehaviour : Player, IJumpable
         OnEnemyRevive += EnemyRevived;
         OnEnemyWin += EnemyWon;
 
-        enemyAction = new PlayerCurrentAction();
+        enemyAction = new EnemyCurrentAction();
         enemyState = new PlayerState();
         enemyTask = new EnemyCurrentTask();
 
@@ -78,6 +87,8 @@ public class EnemyBehaviour : Player, IJumpable
         {
             CheckTrampoline();
             Move();
+
+            if(agent.enabled == false && enemyAction != EnemyCurrentAction.Fall) { CheckRunForwardState(); }
         }
     }
 
@@ -103,7 +114,7 @@ public class EnemyBehaviour : Player, IJumpable
     #region Действия противника
     private Vector3 FindTrampoline()
     {
-        Vector3 searchPosition = new Vector3(enemy.transform.position.x, enemy.transform.position.y, enemy.transform.position.z + searchRadius);
+        Vector3 searchPosition = new Vector3(enemy.transform.position.x, enemy.transform.position.y, enemy.transform.position.z + searchRadius + 2);
         var hitInfo = Physics.OverlapSphere(searchPosition, searchRadius, trampolineMask);
 
         return hitInfo[0].gameObject.transform.position;
@@ -111,21 +122,28 @@ public class EnemyBehaviour : Player, IJumpable
 
     protected override void Move()
     {
+        playerSkin.transform.rotation = enemy.transform.rotation = Quaternion.Euler(Vector3.zero);
+
         switch (enemyAction)
         {
-            case PlayerCurrentAction.Run:
-                // Направление дается из SetDestination, это же просто означает что игрок готов к любому действию
+            case EnemyCurrentAction.Run:
+                // Направление дается из SetDestination, это же состояние означает что игрок бежит вперед
+                if (enemy.transform.position.y > 2) { Run(); }
                 break;
-            case PlayerCurrentAction.Fall:
+            case EnemyCurrentAction.Fall:
+                enemy.transform.rotation = Quaternion.Euler(Vector3.zero);
                 Fall();
+                Run();
                 break;
-            case PlayerCurrentAction.Jump:
+            case EnemyCurrentAction.Jump:
+                enemy.transform.rotation = Quaternion.Euler(Vector3.zero);
                 Jump();
+                Run();
                 break;
-            case PlayerCurrentAction.Slide:
+            case EnemyCurrentAction.Slide:
                 // Вызывается из EnemyCollisionReactor
                 break;
-            case PlayerCurrentAction.Crawl:
+            case EnemyCurrentAction.Crawl:
                 Crawl();
                 break;
         }
@@ -150,25 +168,33 @@ public class EnemyBehaviour : Player, IJumpable
                 break;
         }
 
-        agent.SetDestination(destination);
+        if (agent.enabled == true) { agent.SetDestination(destination); }
+    }
+
+    protected override void Run()
+    {
+        Vector3 moveHorizontal = transform.forward * agent.speed;
+        controller.Move(moveHorizontal * Time.deltaTime);
     }
 
     protected override void Jump()
     {
+        CheckRunForwardState();
+
         velocity.y = Mathf.Sqrt(playerJumpHeight * -2 * gravity);
         velocity.y += gravity * Time.deltaTime;
 
         controller.Move(velocity * Time.deltaTime);
 
-        enemyAction = PlayerCurrentAction.Fall;
+        enemyAction = EnemyCurrentAction.Fall;
     }
 
     protected override void Crawl()
     {
-        enemyAction = PlayerCurrentAction.Crawl;
+        enemyAction = EnemyCurrentAction.Crawl;
         //задержка
 
-        enemyAction = PlayerCurrentAction.Run;
+        enemyAction = EnemyCurrentAction.Run;
     }
 
     protected override void Fall()
@@ -180,17 +206,19 @@ public class EnemyBehaviour : Player, IJumpable
 
     public override void JumpOnTrampoline(float jumpForce) //триггерится через батут
     {
+        CheckRunForwardState();
+        Debug.Log("jump");
         velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
         velocity.y += gravity * Time.deltaTime;
 
         controller.Move(velocity * Time.deltaTime);
 
-        enemyAction = PlayerCurrentAction.Fall;
+        enemyAction = EnemyCurrentAction.Fall;
     }
 
     public override void SlideOnSlide(Vector3 PlayerRotation)
     {
-        enemyAction = PlayerCurrentAction.Slide;
+        enemyAction = EnemyCurrentAction.Slide;
 
         enemy.transform.rotation = Quaternion.Euler(PlayerRotation);
     }
@@ -201,13 +229,13 @@ public class EnemyBehaviour : Player, IJumpable
     {
         bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
 
-        if (isGrounded == false && enemyAction != PlayerCurrentAction.Jump)
+        if (isGrounded == false && enemyAction != EnemyCurrentAction.Jump)
         {
-            enemyAction = PlayerCurrentAction.Fall;
+            enemyAction = EnemyCurrentAction.Fall;
         }
-        else if (isGrounded == true && enemyAction == PlayerCurrentAction.Jump || enemyAction == PlayerCurrentAction.Fall)
+        else if (isGrounded == true && enemyAction == EnemyCurrentAction.Jump || enemyAction == EnemyCurrentAction.Fall)
         {
-            enemyAction = PlayerCurrentAction.Run;
+            enemyAction = EnemyCurrentAction.Run;
         }
     }
 
@@ -217,8 +245,21 @@ public class EnemyBehaviour : Player, IJumpable
         //Debug.Log("tramp " + OnTrampoline);
         if(OnTrampoline && enemyTask == EnemyCurrentTask.RunToTrampoline)
         {
-            Debug.Log("huh");
             enemyTask = EnemyCurrentTask.RunForward;
+        }
+    }
+
+    void CheckRunForwardState()
+    {
+        if (agent.enabled == true)
+        {
+            agent.enabled = false;
+            Debug.Log("disabled");
+        }
+        else if (enemy.transform.position.y < 2)
+        {
+            agent.enabled = true;
+            agent.SetDestination(destination);
         }
     }
     #endregion
@@ -245,10 +286,19 @@ public class EnemyBehaviour : Player, IJumpable
     protected void EnemyDied()
     {
         enemyState = PlayerState.Dead;
-
+        agent.enabled = false;
         ResetCharacteristics();
 
-        enemy.transform.position = enemy.GetComponent<PositionRestore>().RestorePosition(DeathReason);
+        switch (DeathReason)
+        {
+            case "Obstacle":
+                enemy.transform.position = enemy.GetComponent<PositionRestore>().RestorePosition(DeathReason);
+                break;
+            case "Water":
+                enemy.transform.position = enemy.GetComponent<CheckPointRecorder>().GetLastCheckPoint();
+                break;
+        }
+        
         DeathReason = null;
 
         Invoke("TriggerReviveEvent", reviveDelay);
@@ -257,7 +307,7 @@ public class EnemyBehaviour : Player, IJumpable
     protected void EnemyRevived()
     {
         enemyState = PlayerState.Alive;
-
+        enemyTask = EnemyCurrentTask.RunForward;
         ResetCharacteristics();
     }
 

@@ -8,21 +8,12 @@ public enum PlayerState
     Menus
 }
 
-public enum PlayerCurrentAction
-{
-    Run, //стандартное состояние, когда нет других команд
-    Fall, //игрок в этом состоянии, когда падает вниз
-    Jump,
-    Slide,
-    Crawl
-}
-
 public class Player : MonoBehaviour
 {
     [Header("Параметры игрока")]
     public GameObject playerSkin;
 
-    public string DeathReason;
+    protected string DeathReason;
 
     public float playerMoveSpeedOriginal; //изначальный параметр скорости, к которому потом "скорость в данный момент" может вернуться
     protected float playerMoveSpeed; //скорость в данный момент

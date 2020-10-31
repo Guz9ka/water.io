@@ -30,12 +30,16 @@ public class PositionRestore : MonoBehaviour
     #region Запись позиции
     void CheckWriteState()
     {
-        foreach (string Key in writedPositions.Keys)
+        //foreach (string Key in writedPositions.Keys)
+        //{
+        //    if (writedPositions[Key].writeAvailable)
+        //    {
+        //        StartCoroutine(WritePosition(Key));
+        //    }
+        //}
+        if (writedPositions["Obstacle"].writeAvailable)
         {
-            if (writedPositions[Key].writeAvailable)
-            {
-                StartCoroutine(WritePosition(Key));
-            }
+            StartCoroutine(WritePosition("Obstacle"));
         }
     }
 

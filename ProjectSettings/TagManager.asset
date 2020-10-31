@@ -12,6 +12,7 @@ TagManager:
   - Obstacle
   - Coin
   - End Zone
+  - CheckPoint
   layers:
   - Default
   - TransparentFX
@@ -23,7 +24,7 @@ TagManager:
   - 
   - Ground
   - Trampoline
-  - 
+  - Wall
   - 
   - 
   - 
