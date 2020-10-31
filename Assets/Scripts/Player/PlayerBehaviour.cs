@@ -13,8 +13,6 @@ enum SwipeState
 enum PlayerCurrentAction
 {
     Run, //стандартное состояние, когда нет других команд
-    MoveLeft,
-    MoveRight,
     Fall, //игрок в этом состоянии, когда падает вниз
     Jump,
     Slide,
@@ -26,22 +24,21 @@ public class PlayerBehaviour : Player, IJumpable
     [Header("Положения и состояния игрока")]
     public PlayerState playerState;
     private PlayerCurrentAction playerAction;
-    private SwipeState swipeState;
-
-    [Header("Смещение джойстика для вызова свайпа")] //насколько нужно подвинуть джойстик в ту или иную сторону для начала действия
-    public float distanceToMove;
-
-    [Header("Движение по сторонам")]
-    public float moveHorizontalSpeed;
-    public float moveHorizontalDistance;
-    public float moveHorizontalDelay;
-
-    [Header("Параметры джойстика")]
-    public FloatingJoystick joystick;
 
     [Header("Локальные параметры игрока")]
     public CharacterController controller;
     protected GameObject player;
+
+    [Header("Параметры джойстика")]
+    public FloatingJoystick joystick;
+
+    public float joystickjoystickSensitivityOriginal; //базовая чувствительность джойстика, к которой он потом может вернуться
+    private float joystickSensitivity; //чувствительность джойстика в данный момент
+    public float joystickSensitivitySlide;
+
+    [Header("Смещение джойстика для вызова свайпа")] //насколько нужно подвинуть джойстик в ту или иную сторону для начала действия
+    public float distanceToJump; //вверх для прыжка
+    public float distanceToCrawl; //для рывка вниз
 
     [Header("Находится ли игрок на земле")]
     public Transform groundChecker;
@@ -67,7 +64,6 @@ public class PlayerBehaviour : Player, IJumpable
         DeathReason = null;
         playerState = new PlayerState();
         playerAction = new PlayerCurrentAction();
-        swipeState = new SwipeState();
 
         //Events
         OnPlayerDied += PlayerDied;
@@ -93,6 +89,26 @@ public class PlayerBehaviour : Player, IJumpable
     }
 
     #region Проверка смен состояния игрока
+    private void CheckInput()
+    {
+        SwipeState swipeVertical = GetVerticalSwipe();
+
+        if (playerAction == PlayerCurrentAction.Run)
+        {
+            switch (swipeVertical)
+            {
+                case SwipeState.Crawl:
+                    playerAction = PlayerCurrentAction.Crawl;
+                    break;
+                case SwipeState.Jump:
+                    playerAction = PlayerCurrentAction.Jump;
+                    break;
+                case SwipeState.Nothing:
+                    break;
+            }
+        }
+    }
+
     void GroundCheck()
     {
         bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
@@ -106,61 +122,18 @@ public class PlayerBehaviour : Player, IJumpable
             playerAction = PlayerCurrentAction.Run;
         }
     }
-
-    private void CheckInput()
-    {
-        if (playerAction == PlayerCurrentAction.Run)
-        {
-             swipeState = GetCurrentSwipe();
-
-            switch (swipeState)
-            {
-                case SwipeState.Crawl:
-                    playerAction = PlayerCurrentAction.Crawl;
-                    break;
-                case SwipeState.Jump:
-                    playerAction = PlayerCurrentAction.Jump;
-                    break;
-                case SwipeState.MoveLeft:
-                    playerAction = PlayerCurrentAction.MoveLeft;
-                    StartCoroutine(MoveSidesSwitch());
-                    break;
-                case SwipeState.MoveRight:
-                    playerAction = PlayerCurrentAction.MoveRight;
-                    StartCoroutine(MoveSidesSwitch());
-                    break;
-                case SwipeState.Nothing:
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
     #endregion
 
     #region Считывание свайпов
-    SwipeState GetCurrentSwipe()
+    SwipeState GetVerticalSwipe()
     {
-        bool leftClean = !Physics.Raycast(player.transform.position, Vector3.left, moveHorizontalDistance, LayerMask.GetMask("Wall"));
-        bool rightClean = !Physics.Raycast(player.transform.position, Vector3.right, moveHorizontalDistance, LayerMask.GetMask("Wall"));
-        
-        //Vertical
-        if (joystick.Vertical > distanceToMove)
+        if (joystick.Vertical > distanceToJump)
         {
             return SwipeState.Jump;
         }
-        else if (joystick.Vertical < -distanceToMove)
+        else if (joystick.Vertical < distanceToCrawl)
         {
             return SwipeState.Crawl;
-        }
-        //Horizontal
-        else if (joystick.Horizontal > distanceToMove && rightClean) //можно добавить больше плавности, если ограничить по вертикали и добавить булевую
-        {
-            return SwipeState.MoveRight;
-        }
-        else if (joystick.Horizontal < -distanceToMove && leftClean)
-        {
-            return SwipeState.MoveLeft;
         }
         else
         {
@@ -170,6 +143,7 @@ public class PlayerBehaviour : Player, IJumpable
     #endregion
 
     #region Выполнение движения
+
     protected override void Move()
     {
         Run();
@@ -187,12 +161,6 @@ public class PlayerBehaviour : Player, IJumpable
                 break;
             case PlayerCurrentAction.Crawl:
                 Crawl();
-                break;
-            case PlayerCurrentAction.MoveLeft:
-                MoveSides(PlayerCurrentAction.MoveLeft);
-                break;
-            case PlayerCurrentAction.MoveRight:
-                MoveSides(PlayerCurrentAction.MoveRight);
                 break;
             case PlayerCurrentAction.Slide:
                 //выполняется через скрипт горки
@@ -223,28 +191,10 @@ public class PlayerBehaviour : Player, IJumpable
 
     protected override void Run()
     {
-        Vector3 moveForward = transform.forward * playerMoveSpeed;
-        controller.Move(moveForward * Time.deltaTime);
-    }
+        float moveSides = joystick.Horizontal * joystickSensitivity;
 
-    private IEnumerator MoveSidesSwitch()
-    {
-        yield return new WaitForSeconds(moveHorizontalDelay);
-
-        playerAction = PlayerCurrentAction.Run;
-    }
-
-    private void MoveSides(PlayerCurrentAction moveDirection)
-    {
-        switch (moveDirection)
-        {
-            case PlayerCurrentAction.MoveLeft:
-                controller.Move(Vector3.left * moveHorizontalSpeed * Time.deltaTime);
-                break;
-            case PlayerCurrentAction.MoveRight:
-                controller.Move(Vector3.right * moveHorizontalSpeed * Time.deltaTime);
-                break;
-        }
+        Vector3 moveHorizontal = transform.forward * playerMoveSpeed + transform.right * moveSides;
+        controller.Move(moveHorizontal * Time.deltaTime);
     }
 
     protected override void Fall()
@@ -269,6 +219,7 @@ public class PlayerBehaviour : Player, IJumpable
 
         player.transform.rotation = Quaternion.Euler(PlayerRotation);
         playerMoveSpeed = playerSlideSpeed;
+        joystickSensitivity = joystickSensitivitySlide;
 
         //добавить визуальный поворот скина
     }
@@ -299,16 +250,7 @@ public class PlayerBehaviour : Player, IJumpable
 
         ResetCharacteristics();
 
-        switch (DeathReason)
-        {
-            case "Obstacle":
-                player.transform.position = player.GetComponent<PositionRestore>().RestorePosition(DeathReason);
-                break;
-            case "Water":
-                player.transform.position = player.GetComponent<CheckPointRecorder>().GetLastCheckPoint();
-                break;
-        }
-
+        player.transform.position = player.GetComponent<PositionRestore>().RestorePosition(DeathReason);
         DeathReason = null;
 
         Invoke("TriggerReviveEvent", reviveDelay);
@@ -328,6 +270,7 @@ public class PlayerBehaviour : Player, IJumpable
         controller.Move(new Vector3(0, 0, Mathf.Lerp(0, moveAfterWin, playerMoveSpeed * Time.deltaTime)));
 
         playerMoveSpeed = 0;
+        joystickSensitivity = 0;
         player.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
     #endregion
@@ -346,6 +289,7 @@ public class PlayerBehaviour : Player, IJumpable
     private void ResetCharacteristics()
     {
         playerMoveSpeed = playerMoveSpeedOriginal;
+        joystickSensitivity = joystickjoystickSensitivityOriginal;
 
         player.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
