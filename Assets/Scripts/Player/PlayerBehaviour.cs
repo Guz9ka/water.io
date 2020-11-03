@@ -1,22 +1,11 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-enum SwipeState
-{
-    Crawl,
-    Jump,
-    MoveLeft,
-    MoveRight,
-    Nothing //состояние, если игрок не сделал никаких свайпов
-}
-
 enum PlayerCurrentAction
 {
     Run, //стандартное состояние, когда нет других команд
     Fall, //игрок в этом состоянии, когда падает вниз
-    Jump,
-    Slide,
-    Crawl
+    Slide
 }
 
 public class PlayerBehaviour : Player, IJumpable
@@ -45,9 +34,7 @@ public class PlayerBehaviour : Player, IJumpable
     public float groudCheckDistance;
     private LayerMask groundMask;
 
-    [Header("Смена состояний игрока")]
-    public float reviveDelay;
-
+    //[Header("Смена состояний игрока")]
     public delegate void PlayerDeath();
     public event PlayerDeath OnPlayerDied;
 
@@ -81,7 +68,6 @@ public class PlayerBehaviour : Player, IJumpable
         {
             // observing for player actions
             GroundCheck();
-            CheckInput();
 
             // execute movement tasks
             Move();
@@ -89,55 +75,17 @@ public class PlayerBehaviour : Player, IJumpable
     }
 
     #region Проверка смен состояния игрока
-    private void CheckInput()
-    {
-        SwipeState swipeVertical = GetVerticalSwipe();
-
-        if (playerAction == PlayerCurrentAction.Run)
-        {
-            switch (swipeVertical)
-            {
-                case SwipeState.Crawl:
-                    playerAction = PlayerCurrentAction.Crawl;
-                    break;
-                case SwipeState.Jump:
-                    playerAction = PlayerCurrentAction.Jump;
-                    break;
-                case SwipeState.Nothing:
-                    break;
-            }
-        }
-    }
-
     void GroundCheck()
     {
         bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
 
-        if (isGrounded == false && playerAction != PlayerCurrentAction.Jump)
+        if (isGrounded == false)
         {
             playerAction = PlayerCurrentAction.Fall;
         }
-        else if (isGrounded == true && playerAction == PlayerCurrentAction.Jump || playerAction == PlayerCurrentAction.Fall)
+        else if (isGrounded == true && playerAction == PlayerCurrentAction.Fall)
         {
             playerAction = PlayerCurrentAction.Run;
-        }
-    }
-    #endregion
-
-    #region Считывание свайпов
-    SwipeState GetVerticalSwipe()
-    {
-        if (joystick.Vertical > distanceToJump)
-        {
-            return SwipeState.Jump;
-        }
-        else if (joystick.Vertical < distanceToCrawl)
-        {
-            return SwipeState.Crawl;
-        }
-        else
-        {
-            return SwipeState.Nothing;
         }
     }
     #endregion
@@ -155,12 +103,6 @@ public class PlayerBehaviour : Player, IJumpable
                 break;
             case PlayerCurrentAction.Fall:
                 Fall();
-                break;
-            case PlayerCurrentAction.Jump:
-                Jump();
-                break;
-            case PlayerCurrentAction.Crawl:
-                Crawl();
                 break;
             case PlayerCurrentAction.Slide:
                 //выполняется через скрипт горки
@@ -180,14 +122,6 @@ public class PlayerBehaviour : Player, IJumpable
         playerAction = PlayerCurrentAction.Fall;
     }
 
-    protected override void Crawl()
-    {
-        playerAction = PlayerCurrentAction.Crawl;
-        controller.height = 1.2f;
-        //задержка
-
-        playerAction = PlayerCurrentAction.Run;
-    }
 
     protected override void Run()
     {
@@ -249,11 +183,6 @@ public class PlayerBehaviour : Player, IJumpable
         playerState = PlayerState.Dead;
 
         ResetCharacteristics();
-
-        player.transform.position = player.GetComponent<PositionRestore>().RestorePosition(DeathReason);
-        DeathReason = null;
-
-        Invoke("TriggerReviveEvent", reviveDelay);
     }
 
     protected override void PlayerRevived()
@@ -266,8 +195,6 @@ public class PlayerBehaviour : Player, IJumpable
     protected override void PlayerWon()
     {
         playerState = PlayerState.Win;
-
-        controller.Move(new Vector3(0, 0, Mathf.Lerp(0, moveAfterWin, playerMoveSpeed * Time.deltaTime)));
 
         playerMoveSpeed = 0;
         joystickSensitivity = 0;

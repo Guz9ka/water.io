@@ -47,7 +47,7 @@ public class FallableBlock : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if(blockState == BlockState.Fall) 
         {

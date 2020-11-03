@@ -4,35 +4,35 @@ using UnityEngine;
 
 public enum WaterState
 {
-    Low,
-    High,
-    Raising,
-    Lowering
+    Static,
+    Raising
 }
+
 
 public class WaterTide : MonoBehaviour
 {
+    [System.Serializable]
+    public class Tide
+    {
+        public int time;
+        public float height;
+    }
+
     public static WaterTide singleton { get; private set; }
 
     [Header("Параметры прилива")]
-    public GameObject water;
+    private WaterState waterState;
+    [SerializeField] private GameObject water;
 
-    public static WaterState waterState;
-    public float tideHeight;
-    public float tideLow;
-    public float tideSpeed;
+    private Tide currentTide; 
+    [SerializeField] public List<Tide> tides;
+    [SerializeField] private float tideSpeed;
 
-    public int tideCurrentNumber;
-    public int tideLowCurrentNumber;
-    public List<int> tideTime;
-    public List<int> tideLowTime;
+    private Vector3 waterNewPosition;
 
     //[Header("Событие прилива")]
-    public delegate void Tide();
-    public event Tide OnTideRaising;
-
-    public delegate void TideEnd();
-    public event TideEnd OnTideLowering;
+    private delegate void TideStart();
+    private event TideStart OnTideRaising;
 
     [Header("Таймер")]
     Timer timer;
@@ -42,6 +42,7 @@ public class WaterTide : MonoBehaviour
     private void Start()
     {
         singleton = this;
+        currentTide = tides[0];
 
         waterState = new WaterState();
 
@@ -49,7 +50,6 @@ public class WaterTide : MonoBehaviour
         timer = new Timer(timerCallback, null, 0, 1000);
 
         OnTideRaising += StartTide;
-        OnTideLowering += EndTide;
     }
 
     private void Update()
@@ -65,62 +65,40 @@ public class WaterTide : MonoBehaviour
             case WaterState.Raising:
                 WaterRaising();
                 break;
-            case WaterState.Lowering:
-                WaterLowering();
-                break;
         }
     }
 
     private void CheckTideTime()
     {
-        if (tideTime.Count > tideCurrentNumber)
+        if (tides.Count > tides.IndexOf(currentTide) + 1)
         {
-            if (timeCurrent > tideTime[tideCurrentNumber] && waterState != WaterState.Raising)
+            if (timeCurrent > currentTide.time && waterState == WaterState.Static)
             {
                 OnTideRaising.Invoke();
-            }
-        }
-        if (tideLowTime.Count > tideLowCurrentNumber)
-        {
-            if (timeCurrent > tideLowTime[tideLowCurrentNumber] && waterState != WaterState.Lowering)
-            {
-                OnTideLowering.Invoke();
             }
         }
     }
 
     private void StartTide()
     {
-        tideCurrentNumber += 1;
+        if (tides.IndexOf(currentTide) != 0) { NextTide(); }
+        Vector3 waterPosition = water.transform.position;
+        waterNewPosition = new Vector3(waterPosition.x, waterPosition.y + currentTide.height, waterPosition.z);
+        Debug.Log(waterNewPosition);
         waterState = WaterState.Raising;
     }
 
-    private void EndTide()
-    {
-        tideLowCurrentNumber += 1;
-        waterState = WaterState.Lowering;
-    }
 
     void WaterRaising()
     {
         Vector3 waterPosition = water.transform.position;
-        Vector3 waterNewPosition = new Vector3(waterPosition.x, tideHeight, waterPosition.z);
-        waterPosition = Vector3.Lerp(waterPosition, waterNewPosition, tideSpeed * Time.deltaTime);
-
-        water.transform.position = waterPosition;
-        
-        if (water.transform.position.y >= tideHeight - 0.1f) { waterState = WaterState.High; }
+        water.transform.position = Vector3.Lerp(waterPosition, waterNewPosition, tideSpeed * Time.deltaTime);
     }
 
-    void WaterLowering()
+    private void NextTide()
     {
-        Vector3 waterPosition = water.transform.position;
-        Vector3 waterNewPosition = new Vector3(waterPosition.x, tideLow, waterPosition.z);
-        waterPosition = Vector3.Lerp(waterPosition, waterNewPosition, tideSpeed * Time.deltaTime);
-        
-        water.transform.position = waterPosition;
-
-        if (water.transform.position.y <= tideLow + 0.1f) { waterState = WaterState.Low; }
+        waterState = WaterState.Static;
+        currentTide = tides[(tides.IndexOf(currentTide) + 1)];
     }
 
     void TimerCallback(object time)
