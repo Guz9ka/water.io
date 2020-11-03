@@ -308,9 +308,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6058293843283464018}
   - component: {fileID: 6058293843283464019}
-  - component: {fileID: 7640085726764283094}
+  - component: {fileID: 6612937061334192543}
   - component: {fileID: 6058293843283464008}
-  - component: {fileID: 6058293843283464015}
   - component: {fileID: 6058293843283464012}
   - component: {fileID: 6058293843283464013}
   - component: {fileID: 4539420545562839478}
@@ -353,13 +352,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerSkin: {fileID: 6058293842021850438}
-  DeathReason: 
   playerMoveSpeedOriginal: 15
   playerSlideSpeed: 25
   playerJumpHeight: 2.5
   moveAfterWin: 0
   playerState: 0
-  playerAction: 0
   controller: {fileID: 6058293843283464012}
   joystick: {fileID: 0}
   joystickjoystickSensitivityOriginal: 3
@@ -368,8 +365,7 @@ MonoBehaviour:
   distanceToCrawl: -0.9
   groundChecker: {fileID: 6058293842724410645}
   groudCheckDistance: 0.3
-  reviveDelay: 0.2
---- !u!114 &7640085726764283094
+--- !u!114 &6612937061334192543
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -378,10 +374,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 6058293843283464017}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae1ffbb4973c8874cbddf51fd4034c56, type: 3}
+  m_Script: {fileID: 11500000, guid: 8ca2bd46fd115604fa5997d8c389059c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lastCheckPoint: {fileID: 0}
+  maxCharge: 0
+  chargeDuration: 0
+  pushDistance: 0
+  pushForce: 0
 --- !u!114 &6058293843283464008
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -396,23 +395,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TrampolineJumpForce: 9
   SlideRotation: {x: 20, y: 0, z: 0}
---- !u!114 &6058293843283464015
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6058293843283464017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 05f90c55e23053d4a980afe6658e839b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  PositionRecords:
-  - tag: Obstacle
-    writeAvailable: 0
-    lastWritedPosition: {x: 0, y: 0, z: 0}
-    rewriteDelay: 2
 --- !u!143 &6058293843283464012
 CharacterController:
   m_ObjectHideFlags: 0

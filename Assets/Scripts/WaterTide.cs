@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using DG.Tweening;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 
@@ -28,8 +29,6 @@ public class WaterTide : MonoBehaviour
     [SerializeField] public List<Tide> tides;
     [SerializeField] private float tideSpeed;
 
-    private Vector3 waterNewPosition;
-
     //[Header("Событие прилива")]
     private delegate void TideStart();
     private event TideStart OnTideRaising;
@@ -54,18 +53,7 @@ public class WaterTide : MonoBehaviour
 
     private void Update()
     {
-        CheckTideState();
         CheckTideTime();
-    }
-
-    private void CheckTideState()
-    {
-        switch (waterState)
-        {
-            case WaterState.Raising:
-                WaterRaising();
-                break;
-        }
     }
 
     private void CheckTideTime()
@@ -81,18 +69,13 @@ public class WaterTide : MonoBehaviour
 
     private void StartTide()
     {
-        if (tides.IndexOf(currentTide) != 0) { NextTide(); }
         Vector3 waterPosition = water.transform.position;
-        waterNewPosition = new Vector3(waterPosition.x, waterPosition.y + currentTide.height, waterPosition.z);
-        Debug.Log(waterNewPosition);
-        waterState = WaterState.Raising;
-    }
+        Vector3 waterNewPosition = new Vector3(waterPosition.x, waterPosition.y + currentTide.height, waterPosition.z);
 
+        float moveDuration = tides[(tides.IndexOf(currentTide) + 1)].time - currentTide.time;
+        water.transform.DOMoveY(waterNewPosition.y, moveDuration);
 
-    void WaterRaising()
-    {
-        Vector3 waterPosition = water.transform.position;
-        water.transform.position = Vector3.Lerp(waterPosition, waterNewPosition, tideSpeed * Time.deltaTime);
+        NextTide();
     }
 
     private void NextTide()
