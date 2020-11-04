@@ -5,6 +5,7 @@ enum PlayerCurrentAction
 {
     Run, //стандартное состояние, когда нет других команд
     Fall, //игрок в этом состоянии, когда падает вниз
+    Jump,
     Slide
 }
 
@@ -25,14 +26,17 @@ public class PlayerBehaviour : Player, IJumpable
     private float joystickSensitivity; //чувствительность джойстика в данный момент
     public float joystickSensitivitySlide;
 
-    [Header("Смещение джойстика для вызова свайпа")] //насколько нужно подвинуть джойстик в ту или иную сторону для начала действия
-    public float distanceToJump; //вверх для прыжка
-    public float distanceToCrawl; //для рывка вниз
-
     [Header("Находится ли игрок на земле")]
     public Transform groundChecker;
     public float groudCheckDistance;
     private LayerMask groundMask;
+
+    [Header("Проверка тайла спереди игрока")]
+    public Vector3 tileCheckOffset;
+    public float tileCheckRadius;
+
+    public float tileJumpDelay;
+    public bool tileJumpAvailable;
 
     //[Header("Смена состояний игрока")]
     public delegate void PlayerDeath();
@@ -68,6 +72,7 @@ public class PlayerBehaviour : Player, IJumpable
         {
             // observing for player actions
             GroundCheck();
+            JumpCheck();
 
             // execute movement tasks
             Move();
@@ -79,16 +84,34 @@ public class PlayerBehaviour : Player, IJumpable
     {
         bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
 
-        if (isGrounded == false)
+        if (isGrounded == false && playerAction != PlayerCurrentAction.Jump)
         {
             playerAction = PlayerCurrentAction.Fall;
         }
-        else if (isGrounded == true && playerAction == PlayerCurrentAction.Fall)
+        else if (isGrounded == true && playerAction == PlayerCurrentAction.Jump || playerAction == PlayerCurrentAction.Fall)
         {
             playerAction = PlayerCurrentAction.Run;
         }
     }
+
+    Vector3 tileCheckPosition;
+    void JumpCheck()
+    {
+        tileCheckPosition = player.transform.position + tileCheckOffset;
+        bool tileLost = !Physics.CheckSphere(tileCheckPosition, tileCheckRadius, groundMask); //true, когда перед игроком нет тайла
+
+        if(tileLost && tileJumpAvailable && playerAction != PlayerCurrentAction.Jump && playerAction != PlayerCurrentAction.Fall)
+        {
+            StartCoroutine(JumpSwitch());
+            playerAction = PlayerCurrentAction.Jump;
+        }
+    }
     #endregion
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireSphere(tileCheckPosition, tileCheckRadius);
+    }
 
     #region Выполнение движения
 
@@ -103,6 +126,9 @@ public class PlayerBehaviour : Player, IJumpable
                 break;
             case PlayerCurrentAction.Fall:
                 Fall();
+                break;
+            case PlayerCurrentAction.Jump:
+                Jump();
                 break;
             case PlayerCurrentAction.Slide:
                 //выполняется через скрипт горки
@@ -219,5 +245,14 @@ public class PlayerBehaviour : Player, IJumpable
         joystickSensitivity = joystickjoystickSensitivityOriginal;
 
         player.transform.rotation = Quaternion.Euler(Vector3.zero);
+    }
+
+    IEnumerator JumpSwitch()
+    {
+        tileJumpAvailable = false;
+
+        yield return new WaitForSeconds(tileJumpDelay);
+
+        tileJumpAvailable = true;
     }
 }

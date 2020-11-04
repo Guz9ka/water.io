@@ -17,13 +17,17 @@ public class PlayerPush : MonoBehaviour
     private bool screenTouched = false;
 
     [Header("Параметры заряда")]
-    [SerializeField] private float maxCharge; // макс. радиус
-    [SerializeField] private float chargeDuration; //длительность заряда
+    [SerializeField] 
+    private float maxCharge; // макс. радиус
+    [SerializeField] 
+    private float chargeDuration; //длительность заряда
     private float currentCharge; //заряд в данный момент
 
     [Header("Параметры толчка")]
-    [SerializeField] private float pushDistance; //дальность толчка 
-    [SerializeField] private float pushForce; //сила толчка
+    [SerializeField] 
+    private float pushDistance; //дальность толчка 
+    [SerializeField] 
+    private float pushForce; //сила толчка
 
     private void Start()
     {

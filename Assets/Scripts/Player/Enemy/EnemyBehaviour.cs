@@ -15,6 +15,7 @@ enum EnemyCurrentAction
 {
     Run, //стандартное состояние, когда нет других команд
     Fall, //игрок в этом состоянии, когда падает вниз
+    Jump,
     Slide
 }
 
@@ -39,6 +40,13 @@ public class EnemyBehaviour : Player, IJumpable
     public Transform groundChecker;
     public float groudCheckDistance;
     private LayerMask groundMask;
+
+    [Header("Проверка тайла спереди противника")]
+    public Vector3 tileCheckOffset;
+    public float tileCheckRadius;
+
+    public float tileJumpDelay;
+    public bool tileJumpAvailable;
 
     [Header("Состояния противника")]
     private EnemyCurrentAction enemyAction;
@@ -80,6 +88,8 @@ public class EnemyBehaviour : Player, IJumpable
         {
             CheckTrampoline();
             ResetSkinRotation();
+            JumpCheck();
+
             if (agent.enabled)
             {
                 ExecuteTask();
@@ -116,10 +126,11 @@ public class EnemyBehaviour : Player, IJumpable
 
         switch (enemyAction)
         {
-            case EnemyCurrentAction.Run:
-                break;
             case EnemyCurrentAction.Fall:
                 Fall();
+                break;
+            case EnemyCurrentAction.Jump:
+                Jump();
                 break;
         }
     }
@@ -206,6 +217,20 @@ public class EnemyBehaviour : Player, IJumpable
             enemyTask = EnemyCurrentTask.RunForward;
         }
     }
+
+    Vector3 tileCheckPosition;
+    void JumpCheck()
+    {
+        tileCheckPosition = enemy.transform.position + tileCheckOffset;
+        bool tileLost = !Physics.CheckSphere(tileCheckPosition, tileCheckRadius, groundMask); //true, когда перед игроком нет тайла
+
+        if (tileLost && tileJumpAvailable && enemyAction != EnemyCurrentAction.Jump && enemyAction != EnemyCurrentAction.Fall)
+        {
+            StartCoroutine(JumpSwitch());
+            agent.enabled = false;
+            enemyAction = EnemyCurrentAction.Jump;
+        }
+    }
     #endregion
 
     #region Триггеры смены состояний противника
@@ -248,6 +273,17 @@ public class EnemyBehaviour : Player, IJumpable
     }
     #endregion
 
+    #region Реакция на смену состояния игры
+    public void OnGameStart()
+    {
+    }
+
+    public void OnGameEnd()
+    {
+
+    }
+    #endregion
+
     #region Сброс состояний игрока
     private void ResetCharacteristics()
     {
@@ -265,14 +301,12 @@ public class EnemyBehaviour : Player, IJumpable
     }
     #endregion
 
-    #region Реакция на смену состояния игры
-    public void OnGameStart()
+    IEnumerator JumpSwitch()
     {
-    }
+        tileJumpAvailable = false;
 
-    public void OnGameEnd()
-    {
+        yield return new WaitForSeconds(tileJumpDelay);
 
+        tileJumpAvailable = true;
     }
-    #endregion
 }
