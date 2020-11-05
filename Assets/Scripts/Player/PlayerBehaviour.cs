@@ -6,7 +6,9 @@ enum PlayerCurrentAction
     Run, //стандартное состояние, когда нет других команд
     Fall, //игрок в этом состоянии, когда падает вниз
     Jump,
-    Slide
+    Slide,
+    FlyingUp,
+    FlyingForward
 }
 
 public class PlayerBehaviour : Player, IJumpable
@@ -22,9 +24,21 @@ public class PlayerBehaviour : Player, IJumpable
     [Header("Параметры джойстика")]
     public FloatingJoystick joystick;
 
-    public float joystickjoystickSensitivityOriginal; //базовая чувствительность джойстика, к которой он потом может вернуться
+    [SerializeField]
     private float joystickSensitivity; //чувствительность джойстика в данный момент
     public float joystickSensitivitySlide;
+
+    [Header("Параметры джетпака")]
+    [SerializeField]
+    float flyJoystickSensetivity;
+    [SerializeField]
+    float playerFlySpeed;
+
+    bool flyAvailable = true;
+    float flyHeight;
+    float flyUpDuration;
+    float flyDistance;
+    float flyDuration;
 
     [Header("Находится ли игрок на земле")]
     public Transform groundChecker;
@@ -80,18 +94,21 @@ public class PlayerBehaviour : Player, IJumpable
     }
 
     #region Проверка смен состояния игрока
-    void GroundCheck()
+    bool GroundCheck()
     {
         bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
 
-        if (isGrounded == false && playerAction != PlayerCurrentAction.Jump)
+        if (isGrounded == false && playerAction != PlayerCurrentAction.Jump && playerAction != PlayerCurrentAction.FlyingForward && playerAction != PlayerCurrentAction.FlyingUp)
         {
             playerAction = PlayerCurrentAction.Fall;
         }
-        else if (isGrounded == true && playerAction == PlayerCurrentAction.Jump || playerAction == PlayerCurrentAction.Fall)
+        else if (isGrounded == true && playerAction == PlayerCurrentAction.Fall)
         {
             playerAction = PlayerCurrentAction.Run;
+            flyAvailable = true;
         }
+
+        return isGrounded;
     }
 
     Vector3 tileCheckPosition;
@@ -100,7 +117,7 @@ public class PlayerBehaviour : Player, IJumpable
         tileCheckPosition = player.transform.position + tileCheckOffset;
         bool tileLost = !Physics.CheckSphere(tileCheckPosition, tileCheckRadius, groundMask); //true, когда перед игроком нет тайла
 
-        if(tileLost && tileJumpAvailable && playerAction != PlayerCurrentAction.Jump && playerAction != PlayerCurrentAction.Fall)
+        if (tileLost && tileJumpAvailable && playerAction == PlayerCurrentAction.Run)
         {
             StartCoroutine(JumpSwitch());
             playerAction = PlayerCurrentAction.Jump;
@@ -117,21 +134,29 @@ public class PlayerBehaviour : Player, IJumpable
 
     protected override void Move()
     {
-        Run();
-
         switch (playerAction)
         {
             case PlayerCurrentAction.Run:
                 //выполняется всегда, когда игрок жив
+                Run();
                 break;
             case PlayerCurrentAction.Fall:
                 Fall();
+                Run();
                 break;
             case PlayerCurrentAction.Jump:
                 Jump();
+                Run();
                 break;
             case PlayerCurrentAction.Slide:
                 //выполняется через скрипт горки
+                break;
+            case PlayerCurrentAction.FlyingUp:
+                Run();
+                FlyUpOnJetpack();
+                break;
+            case PlayerCurrentAction.FlyingForward:
+                FlyForwardOnJetpack();
                 break;
         }
     }
@@ -147,7 +172,6 @@ public class PlayerBehaviour : Player, IJumpable
 
         playerAction = PlayerCurrentAction.Fall;
     }
-
 
     protected override void Run()
     {
@@ -182,6 +206,31 @@ public class PlayerBehaviour : Player, IJumpable
         joystickSensitivity = joystickSensitivitySlide;
 
         //добавить визуальный поворот скина
+    }
+
+    public override void FlyUpOnJetpack()
+    {
+        playerAction = PlayerCurrentAction.FlyingUp;
+
+        velocity.y = Mathf.Sqrt(flyHeight * -2 * gravity);
+        velocity.y += gravity * Time.deltaTime;
+
+        controller.Move(velocity * Time.deltaTime);
+    }
+
+    protected override void FlyForwardOnJetpack()
+    {
+        playerAction = PlayerCurrentAction.FlyingForward;
+
+        float moveSides = joystick.Horizontal * flyJoystickSensetivity;
+        Vector3 moveHorizontal = transform.forward * playerFlySpeed + transform.right * moveSides;
+
+        controller.Move(moveHorizontal * Time.deltaTime);
+
+    }
+
+    protected override void SpeedUpOnBooster()
+    {
     }
     #endregion
 
@@ -242,7 +291,6 @@ public class PlayerBehaviour : Player, IJumpable
     private void ResetCharacteristics()
     {
         playerMoveSpeed = playerMoveSpeedOriginal;
-        joystickSensitivity = joystickjoystickSensitivityOriginal;
 
         player.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
@@ -254,5 +302,36 @@ public class PlayerBehaviour : Player, IJumpable
         yield return new WaitForSeconds(tileJumpDelay);
 
         tileJumpAvailable = true;
+    }
+
+    public void TriggerJetpackUse(float FlyHeight, float FlyUpDuration, float FlyDistance, float FlyDuration)
+    {
+        if (flyAvailable)
+        {
+            this.flyUpDuration = FlyUpDuration;
+            this.flyHeight = FlyHeight;
+            this.flyDistance = FlyDistance;
+            this.flyDuration = FlyDuration;
+
+            StartCoroutine(UseJetpack());
+        }
+    }
+
+    IEnumerator UseJetpack()
+    {
+        flyAvailable = false;
+
+        playerAction = PlayerCurrentAction.FlyingUp;
+        gravity = -1f;
+
+        yield return new WaitForSeconds(flyUpDuration);
+
+        gravity = -9.8f;
+        playerAction = PlayerCurrentAction.FlyingForward;
+
+        yield return new WaitForSeconds(flyDuration);
+
+        flyAvailable = true;
+        playerAction = PlayerCurrentAction.Fall;
     }
 }

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public enum PlayerState
 {
@@ -25,7 +26,7 @@ public class Player : MonoBehaviour
     public float moveAfterWin;
 
     [Header("Рассчет физики")]
-    protected const float gravity = -9.81f;
+    protected float gravity = -9.81f;
     protected Vector3 velocity;
 
     protected virtual void Move() { }
@@ -33,7 +34,10 @@ public class Player : MonoBehaviour
     protected virtual void Run() { }
     protected virtual void Fall() { }
     protected virtual void Jump() { }
-    protected virtual void Crawl() { }
+    public virtual void FlyUpOnJetpack() { }
+    //protected virtual void JumpOnBoots() { }
+    protected virtual void FlyForwardOnJetpack() { }
+    protected virtual void SpeedUpOnBooster() { }
     protected virtual void PlayerDied() { }
     protected virtual void PlayerRevived() { }
     protected virtual void PlayerWon() { }

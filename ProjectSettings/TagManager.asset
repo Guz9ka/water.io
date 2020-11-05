@@ -13,6 +13,7 @@ TagManager:
   - Coin
   - End Zone
   - CheckPoint
+  - Jetpack
   layers:
   - Default
   - TransparentFX

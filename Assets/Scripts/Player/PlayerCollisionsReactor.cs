@@ -2,13 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerCollisionsReactor : MonoBehaviour
+public class PlayerCollisionsReactor : MonoBehaviour //Собрал в отдельный скрипт чтобы было больше производительности
 {
     private PlayerBehaviour playerBehaviour;
 
-    [Header("Переменные объектов")]
-    public float TrampolineJumpForce;
-    public Vector3 SlideRotation;
+    [Header("Параметры батута")]
+    [SerializeField]
+    private float TrampolineJumpForce;
+
+    [Header("Параметры горки")]
+    [SerializeField]
+    private Vector3 SlideRotation;
+
+    [Header("Параметры джетпака")]
+    [SerializeField]
+    private float FlyHeight;
+    [SerializeField]
+    private float FlyUpDuration;
+    [SerializeField]
+    private float FlyDistance;
+    [SerializeField]
+    private float FlyDuration;
 
     void Start()
     {
@@ -19,6 +33,10 @@ public class PlayerCollisionsReactor : MonoBehaviour
     {
         switch (other.tag)
         {
+            case "Jetpack":
+                Destroy(other.gameObject);
+                playerBehaviour.TriggerJetpackUse(FlyHeight, FlyUpDuration, FlyDistance, FlyDuration);
+                break;
             case "Obstacle":
                 playerBehaviour.TriggerDeathEvent("Obstacle");
                 break;
