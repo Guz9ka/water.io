@@ -66,7 +66,6 @@ public class EnemyBehaviour : Player, IJumpable
     void Start()
     {
         enemy = gameObject;   
-        DeathReason = null;
 
         OnEnemyDied += EnemyDied;
         OnEnemyRevive += EnemyRevived;
@@ -234,9 +233,8 @@ public class EnemyBehaviour : Player, IJumpable
     #endregion
 
     #region Триггеры смены состояний противника
-    public void TriggerDeathEvent(string deathReason)
+    public void TriggerDeathEvent()
     {
-        DeathReason = deathReason;
         OnEnemyDied.Invoke();
     }
 

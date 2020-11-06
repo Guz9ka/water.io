@@ -231,6 +231,8 @@ GameObject:
   - component: {fileID: 6058293843283464019}
   - component: {fileID: 6612937061334192543}
   - component: {fileID: 6058293843283464008}
+  - component: {fileID: 4680217971544321266}
+  - component: {fileID: 760473342090024715}
   - component: {fileID: 6058293843283464012}
   - component: {fileID: 6058293843283464013}
   - component: {fileID: 4539420545562839478}
@@ -273,14 +275,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerSkin: {fileID: 0}
-  playerMoveSpeedOriginal: 15
+  playerSpeedOriginal: 0
   playerSlideSpeed: 25
   playerJumpHeight: 2.5
   moveAfterWin: 0
+  gravity: -9.81
+  velocity: {x: 0, y: 0, z: 0}
   playerState: 0
+  PlayerAction: 0
   controller: {fileID: 6058293843283464012}
   joystick: {fileID: 0}
-  joystickjoystickSensitivityOriginal: 3
+  joystickSensitivity: 3
   joystickSensitivitySlide: 5
   groundChecker: {fileID: 6058293842724410645}
   groudCheckDistance: 0.3
@@ -318,6 +323,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   TrampolineJumpForce: 9
   SlideRotation: {x: 20, y: 0, z: 0}
+--- !u!114 &4680217971544321266
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6058293843283464017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 617a14f89d42bdf49a281e80162f7682, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flyHeight: 12
+  flyUpDuration: 2
+  flyDuration: 4
+  flyJoystickSensetivity: 7
+  playerFlySpeed: 30
+--- !u!114 &760473342090024715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6058293843283464017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 487a70eddd658a34ba219cca574d4597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PlayerCurrentSpeed: 0
+  _playerSpeed: 0
+  _speedBoostDuration: 0
 --- !u!143 &6058293843283464012
 CharacterController:
   m_ObjectHideFlags: 0

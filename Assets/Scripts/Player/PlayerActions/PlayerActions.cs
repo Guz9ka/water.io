@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-enum PlayerCurrentAction
+public enum PlayerCurrentAction
 {
     Run, //стандартное состояние, когда нет других команд
     Fall, //игрок в этом состоянии, когда падает вниз
@@ -11,11 +11,11 @@ enum PlayerCurrentAction
     FlyingForward
 }
 
-public class PlayerBehaviour : Player, IJumpable
+public class PlayerActions : Player, IJumpable
 {
     [Header("Положения и состояния игрока")]
     public PlayerState playerState;
-    private PlayerCurrentAction playerAction;
+    public PlayerCurrentAction PlayerAction;
 
     [Header("Локальные параметры игрока")]
     public CharacterController controller;
@@ -28,17 +28,9 @@ public class PlayerBehaviour : Player, IJumpable
     private float joystickSensitivity; //чувствительность джойстика в данный момент
     public float joystickSensitivitySlide;
 
-    [Header("Параметры джетпака")]
-    [SerializeField]
-    float flyJoystickSensetivity;
-    [SerializeField]
-    float playerFlySpeed;
-
-    bool flyAvailable = true;
-    float flyHeight;
-    float flyUpDuration;
-    float flyDistance;
-    float flyDuration;
+    [Header("Бустеры")]
+    public IJetPack jetPack;
+    public ISpeedBooster speedBooster;
 
     [Header("Находится ли игрок на земле")]
     public Transform groundChecker;
@@ -64,11 +56,13 @@ public class PlayerBehaviour : Player, IJumpable
 
     private void Start()
     {
+        jetPack = GetComponent<IJetPack>();
+        speedBooster = GetComponent<ISpeedBooster>();
+
         //states
         player = gameObject;
-        DeathReason = null;
         playerState = new PlayerState();
-        playerAction = new PlayerCurrentAction();
+        PlayerAction = new PlayerCurrentAction();
 
         //Events
         OnPlayerDied += PlayerDied;
@@ -98,14 +92,13 @@ public class PlayerBehaviour : Player, IJumpable
     {
         bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
 
-        if (isGrounded == false && playerAction != PlayerCurrentAction.Jump && playerAction != PlayerCurrentAction.FlyingForward && playerAction != PlayerCurrentAction.FlyingUp)
+        if (isGrounded == false && PlayerAction != PlayerCurrentAction.Jump && PlayerAction != PlayerCurrentAction.FlyingForward && PlayerAction != PlayerCurrentAction.FlyingUp)
         {
-            playerAction = PlayerCurrentAction.Fall;
+            PlayerAction = PlayerCurrentAction.Fall;
         }
-        else if (isGrounded == true && playerAction == PlayerCurrentAction.Fall)
+        else if (isGrounded == true && PlayerAction == PlayerCurrentAction.Fall)
         {
-            playerAction = PlayerCurrentAction.Run;
-            flyAvailable = true;
+            PlayerAction = PlayerCurrentAction.Run;
         }
 
         return isGrounded;
@@ -117,10 +110,10 @@ public class PlayerBehaviour : Player, IJumpable
         tileCheckPosition = player.transform.position + tileCheckOffset;
         bool tileLost = !Physics.CheckSphere(tileCheckPosition, tileCheckRadius, groundMask); //true, когда перед игроком нет тайла
 
-        if (tileLost && tileJumpAvailable && playerAction == PlayerCurrentAction.Run)
+        if (tileLost && tileJumpAvailable && PlayerAction == PlayerCurrentAction.Run)
         {
             StartCoroutine(JumpSwitch());
-            playerAction = PlayerCurrentAction.Jump;
+            PlayerAction = PlayerCurrentAction.Jump;
         }
     }
     #endregion
@@ -134,10 +127,9 @@ public class PlayerBehaviour : Player, IJumpable
 
     protected override void Move()
     {
-        switch (playerAction)
+        switch (PlayerAction)
         {
             case PlayerCurrentAction.Run:
-                //выполняется всегда, когда игрок жив
                 Run();
                 break;
             case PlayerCurrentAction.Fall:
@@ -149,14 +141,14 @@ public class PlayerBehaviour : Player, IJumpable
                 Run();
                 break;
             case PlayerCurrentAction.Slide:
-                //выполняется через скрипт горки
+                //выполняется через скрипт горки, нужно переделывать
                 break;
             case PlayerCurrentAction.FlyingUp:
                 Run();
-                FlyUpOnJetpack();
+                jetPack.FlyUp();
                 break;
             case PlayerCurrentAction.FlyingForward:
-                FlyForwardOnJetpack();
+                jetPack.FlyForward();
                 break;
         }
     }
@@ -170,7 +162,7 @@ public class PlayerBehaviour : Player, IJumpable
 
         controller.Move(velocity * Time.deltaTime);
 
-        playerAction = PlayerCurrentAction.Fall;
+        PlayerAction = PlayerCurrentAction.Fall;
     }
 
     protected override void Run()
@@ -194,12 +186,12 @@ public class PlayerBehaviour : Player, IJumpable
 
         controller.Move(velocity * Time.deltaTime);
 
-        playerAction = PlayerCurrentAction.Fall;
+        PlayerAction = PlayerCurrentAction.Fall;
     }
 
     public override void SlideOnSlide(Vector3 PlayerRotation)
     {
-        playerAction = PlayerCurrentAction.Slide;
+        PlayerAction = PlayerCurrentAction.Slide;
 
         player.transform.rotation = Quaternion.Euler(PlayerRotation);
         playerMoveSpeed = playerSlideSpeed;
@@ -207,37 +199,11 @@ public class PlayerBehaviour : Player, IJumpable
 
         //добавить визуальный поворот скина
     }
-
-    public override void FlyUpOnJetpack()
-    {
-        playerAction = PlayerCurrentAction.FlyingUp;
-
-        velocity.y = Mathf.Sqrt(flyHeight * -2 * gravity);
-        velocity.y += gravity * Time.deltaTime;
-
-        controller.Move(velocity * Time.deltaTime);
-    }
-
-    protected override void FlyForwardOnJetpack()
-    {
-        playerAction = PlayerCurrentAction.FlyingForward;
-
-        float moveSides = joystick.Horizontal * flyJoystickSensetivity;
-        Vector3 moveHorizontal = transform.forward * playerFlySpeed + transform.right * moveSides;
-
-        controller.Move(moveHorizontal * Time.deltaTime);
-
-    }
-
-    protected override void SpeedUpOnBooster()
-    {
-    }
     #endregion
 
     #region Триггеры смены состояний игрока
-    public void TriggerDeathEvent(string deathReason)
+    public void TriggerDeathEvent()
     {
-        DeathReason = deathReason;
         OnPlayerDied.Invoke();
     }
 
@@ -288,13 +254,6 @@ public class PlayerBehaviour : Player, IJumpable
     }
     #endregion
 
-    private void ResetCharacteristics()
-    {
-        playerMoveSpeed = playerMoveSpeedOriginal;
-
-        player.transform.rotation = Quaternion.Euler(Vector3.zero);
-    }
-
     IEnumerator JumpSwitch()
     {
         tileJumpAvailable = false;
@@ -304,34 +263,10 @@ public class PlayerBehaviour : Player, IJumpable
         tileJumpAvailable = true;
     }
 
-    public void TriggerJetpackUse(float FlyHeight, float FlyUpDuration, float FlyDistance, float FlyDuration)
+    private void ResetCharacteristics()
     {
-        if (flyAvailable)
-        {
-            this.flyUpDuration = FlyUpDuration;
-            this.flyHeight = FlyHeight;
-            this.flyDistance = FlyDistance;
-            this.flyDuration = FlyDuration;
+        playerMoveSpeed = playerSpeedOriginal;
 
-            StartCoroutine(UseJetpack());
-        }
-    }
-
-    IEnumerator UseJetpack()
-    {
-        flyAvailable = false;
-
-        playerAction = PlayerCurrentAction.FlyingUp;
-        gravity = -1f;
-
-        yield return new WaitForSeconds(flyUpDuration);
-
-        gravity = -9.8f;
-        playerAction = PlayerCurrentAction.FlyingForward;
-
-        yield return new WaitForSeconds(flyDuration);
-
-        flyAvailable = true;
-        playerAction = PlayerCurrentAction.Fall;
+        player.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
 }

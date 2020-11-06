@@ -15,7 +15,7 @@ public class EnemyHeadCollisionReactor : MonoBehaviour
     {
         if (collision.collider.tag == "Second Tier")
         {
-            enemyBehaviour.TriggerDeathEvent("Obstacle");
+            enemyBehaviour.TriggerDeathEvent();
         }
     }
 
@@ -23,7 +23,7 @@ public class EnemyHeadCollisionReactor : MonoBehaviour
     {
         if (other.tag == "Water")
         {
-            enemyBehaviour.TriggerDeathEvent("Water");
+            enemyBehaviour.TriggerDeathEvent();
         }
     }
 }

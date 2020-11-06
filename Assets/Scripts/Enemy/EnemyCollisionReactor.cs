@@ -20,7 +20,7 @@ public class EnemyCollisionReactor : MonoBehaviour
         switch (other.tag)
         {
             case "Obstacle":
-                enemyBehaviour.TriggerDeathEvent("Obstacle");
+                enemyBehaviour.TriggerDeathEvent();
                 break;
             case "Coin":
                 Destroy(other.gameObject);

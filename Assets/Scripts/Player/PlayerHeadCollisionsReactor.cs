@@ -2,18 +2,18 @@
 
 public class PlayerHeadCollisionsReactor : MonoBehaviour
 {
-    private PlayerBehaviour playerBehaviour;
+    private PlayerActions playerBehaviour;
 
     void Start()
     {
-        playerBehaviour = GetComponentInParent<PlayerBehaviour>();
+        playerBehaviour = GetComponentInParent<PlayerActions>();
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.collider.tag == "Second Tier")
         {
-            playerBehaviour.TriggerDeathEvent("Obstacle");
+            playerBehaviour.TriggerDeathEvent();
         }
     }
 
@@ -21,7 +21,7 @@ public class PlayerHeadCollisionsReactor : MonoBehaviour
     {
         if (other.tag == "Water")
         {
-            playerBehaviour.TriggerDeathEvent("Water");
+            playerBehaviour.TriggerDeathEvent();
         }
     }
 }

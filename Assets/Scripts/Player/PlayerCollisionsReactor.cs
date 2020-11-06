@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerCollisionsReactor : MonoBehaviour //Собрал в отдельный скрипт чтобы было больше производительности
 {
-    private PlayerBehaviour playerBehaviour;
+    private PlayerActions playerActions;
 
     [Header("Параметры батута")]
     [SerializeField]
@@ -14,43 +14,36 @@ public class PlayerCollisionsReactor : MonoBehaviour //Собрал в отде�
     [SerializeField]
     private Vector3 SlideRotation;
 
-    [Header("Параметры джетпака")]
-    [SerializeField]
-    private float FlyHeight;
-    [SerializeField]
-    private float FlyUpDuration;
-    [SerializeField]
-    private float FlyDistance;
-    [SerializeField]
-    private float FlyDuration;
-
     void Start()
     {
-        playerBehaviour = gameObject.GetComponent<PlayerBehaviour>();
+        playerActions = gameObject.GetComponent<PlayerActions>();
     }
 
     void OnTriggerEnter(Collider other)
     {
         switch (other.tag)
         {
+            case "SpeedBooster":
+                playerActions.speedBooster.TriggerSpeedBoosterUse(playerActions);
+                break;
             case "Jetpack":
                 Destroy(other.gameObject);
-                playerBehaviour.TriggerJetpackUse(FlyHeight, FlyUpDuration, FlyDistance, FlyDuration);
+                playerActions.jetPack.TriggerJetpackUse(playerActions);
                 break;
             case "Obstacle":
-                playerBehaviour.TriggerDeathEvent("Obstacle");
+                playerActions.TriggerDeathEvent();
                 break;
             case "Coin":
                 Destroy(other.gameObject);
                 break;
             case "Trampoline":
-                playerBehaviour.JumpOnTrampoline(TrampolineJumpForce);
+                playerActions.JumpOnTrampoline(TrampolineJumpForce);
                 break;
             case "Slide":
-                playerBehaviour.SlideOnSlide(SlideRotation);
+                playerActions.SlideOnSlide(SlideRotation);
                 break;
             case "End Zone":
-                playerBehaviour.TriggerWinEvent();
+                playerActions.TriggerWinEvent();
                 break;
         }
     }
