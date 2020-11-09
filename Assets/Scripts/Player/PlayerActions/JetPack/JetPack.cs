@@ -17,10 +17,10 @@ public class JetPack : MonoBehaviour, IJetPack
     [SerializeField]
     float playerFlySpeed;
 
-    PlayerActions _playerActions;
+    PlayerMovement _playerActions;
     bool flyAvailable = true;
 
-    public void TriggerJetpackUse(PlayerActions playerActions)
+    public void TriggerJetpackUse(PlayerMovement playerActions)
     {
         if (flyAvailable)
         {

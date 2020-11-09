@@ -19,7 +19,7 @@ enum EnemyCurrentAction
     Slide
 }
 
-public class EnemyBehaviour : Player, IJumpable
+public class EnemyBehaviour : Player
 {
     private GameObject enemy;
 
@@ -129,7 +129,7 @@ public class EnemyBehaviour : Player, IJumpable
                 Fall();
                 break;
             case EnemyCurrentAction.Jump:
-                Jump();
+                TileJump();
                 break;
         }
     }
@@ -156,20 +156,30 @@ public class EnemyBehaviour : Player, IJumpable
         if (agent.enabled == true) { agent.SetDestination(destination); }
     }
 
-    protected override void Run()
+    protected void Run()
     {
         Vector3 moveHorizontal = transform.forward * agent.speed;
         controller.Move(moveHorizontal * Time.deltaTime);
     }
 
-    protected override void Fall()
+    protected void TileJump()
+    {
+        velocity.y = Mathf.Sqrt(playerJumpHeight * -2 * gravity);
+        velocity.y += gravity * Time.deltaTime;
+
+        controller.Move(velocity * Time.deltaTime);
+
+        enemyAction = EnemyCurrentAction.Fall;
+    }
+
+    protected void Fall()
     {
         velocity.y += gravity * Time.deltaTime;
 
         controller.Move(velocity * Time.deltaTime);
     }
 
-    public override void JumpOnTrampoline(float jumpForce) //триггерится через батут
+    public void JumpOnTrampoline(float jumpForce) //триггерится через батут
     {
         velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
         velocity.y += gravity * Time.deltaTime;

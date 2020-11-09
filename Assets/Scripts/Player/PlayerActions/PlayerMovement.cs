@@ -6,12 +6,13 @@ public enum PlayerCurrentAction
     Run, //стандартное состояние, когда нет других команд
     Fall, //игрок в этом состоянии, когда падает вниз
     Jump,
+    JumpOnBoots,
     Slide,
     FlyingUp,
     FlyingForward
 }
 
-public class PlayerActions : Player, IJumpable
+public class PlayerMovement : Player
 {
     [Header("Положения и состояния игрока")]
     public PlayerState playerState;
@@ -31,6 +32,7 @@ public class PlayerActions : Player, IJumpable
     [Header("Бустеры")]
     public IJetPack jetPack;
     public ISpeedBooster speedBooster;
+    public IJumpable jumpBooster;
 
     [Header("Находится ли игрок на земле")]
     public Transform groundChecker;
@@ -58,6 +60,7 @@ public class PlayerActions : Player, IJumpable
     {
         jetPack = GetComponent<IJetPack>();
         speedBooster = GetComponent<ISpeedBooster>();
+        jumpBooster = GetComponent<IJumpable>();
 
         //states
         player = gameObject;
@@ -99,6 +102,7 @@ public class PlayerActions : Player, IJumpable
         else if (isGrounded == true && PlayerAction == PlayerCurrentAction.Fall)
         {
             PlayerAction = PlayerCurrentAction.Run;
+            if (playerMoveSpeed != playerSpeedOriginal) { playerMoveSpeed = playerSpeedOriginal; }
         }
 
         return isGrounded;
@@ -118,13 +122,7 @@ public class PlayerActions : Player, IJumpable
     }
     #endregion
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawWireSphere(tileCheckPosition, tileCheckRadius);
-    }
-
     #region Выполнение движения
-
     protected override void Move()
     {
         switch (PlayerAction)
@@ -137,7 +135,11 @@ public class PlayerActions : Player, IJumpable
                 Run();
                 break;
             case PlayerCurrentAction.Jump:
-                Jump();
+                TileJump();
+                Run();
+                break;
+            case PlayerCurrentAction.JumpOnBoots:
+                jumpBooster.JumpOnBoots();
                 Run();
                 break;
             case PlayerCurrentAction.Slide:
@@ -155,7 +157,7 @@ public class PlayerActions : Player, IJumpable
     #endregion
 
     #region Возможные действия игрока
-    protected override void Jump()
+    protected void TileJump()
     {
         velocity.y = Mathf.Sqrt(playerJumpHeight * -2 * gravity);
         velocity.y += gravity * Time.deltaTime;
@@ -165,7 +167,7 @@ public class PlayerActions : Player, IJumpable
         PlayerAction = PlayerCurrentAction.Fall;
     }
 
-    protected override void Run()
+    protected void Run()
     {
         float moveSides = joystick.Horizontal * joystickSensitivity;
 
@@ -173,20 +175,10 @@ public class PlayerActions : Player, IJumpable
         controller.Move(moveHorizontal * Time.deltaTime);
     }
 
-    protected override void Fall()
+    protected void Fall()
     {
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
-    }
-
-    public override void JumpOnTrampoline(float jumpForce) //триггерится через батут
-    {
-        velocity.y = Mathf.Sqrt(jumpForce * -2 * gravity);
-        velocity.y += gravity * Time.deltaTime;
-
-        controller.Move(velocity * Time.deltaTime);
-
-        PlayerAction = PlayerCurrentAction.Fall;
     }
 
     public override void SlideOnSlide(Vector3 PlayerRotation)
@@ -219,21 +211,21 @@ public class PlayerActions : Player, IJumpable
     #endregion
 
     #region Ответ на смену состояний игрока
-    protected override void PlayerDied()
+    protected void PlayerDied()
     {
         playerState = PlayerState.Dead;
 
         ResetCharacteristics();
     }
 
-    protected override void PlayerRevived()
+    protected void PlayerRevived()
     {
         playerState = PlayerState.Alive;
 
         ResetCharacteristics();
     }
 
-    protected override void PlayerWon()
+    protected void PlayerWon()
     {
         playerState = PlayerState.Win;
 

@@ -14,7 +14,8 @@ TagManager:
   - End Zone
   - CheckPoint
   - Jetpack
-  - SpeedBooster
+  - Jump Boots
+  - Speed Booster
   layers:
   - Default
   - TransparentFX

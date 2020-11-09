@@ -6,14 +6,14 @@ public class SpeedBooster : MonoBehaviour, ISpeedBooster
 {
     private bool speedBoosterUseAvailable = true;
 
-    private PlayerActions _playerActions;
+    private PlayerMovement _playerActions;
     [SerializeField]
     private float _playerSpeed;
     [SerializeField]
     private float _speedBoostDuration;
 
 
-    public void TriggerSpeedBoosterUse(PlayerActions playerActions)
+    public void TriggerSpeedBoosterUse(PlayerMovement playerActions)
     {
         if (speedBoosterUseAvailable)
         {

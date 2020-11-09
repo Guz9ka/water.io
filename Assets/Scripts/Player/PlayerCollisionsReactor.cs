@@ -4,11 +4,7 @@ using UnityEngine;
 
 public class PlayerCollisionsReactor : MonoBehaviour //Собрал в отдельный скрипт чтобы было больше производительности
 {
-    private PlayerActions playerActions;
-
-    [Header("Параметры батута")]
-    [SerializeField]
-    private float TrampolineJumpForce;
+    private PlayerMovement playerActions;
 
     [Header("Параметры горки")]
     [SerializeField]
@@ -16,14 +12,14 @@ public class PlayerCollisionsReactor : MonoBehaviour //Собрал в отде�
 
     void Start()
     {
-        playerActions = gameObject.GetComponent<PlayerActions>();
+        playerActions = gameObject.GetComponent<PlayerMovement>();
     }
 
     void OnTriggerEnter(Collider other)
     {
         switch (other.tag)
         {
-            case "SpeedBooster":
+            case "Speed Booster":
                 playerActions.speedBooster.TriggerSpeedBoosterUse(playerActions);
                 break;
             case "Jetpack":
@@ -37,13 +33,16 @@ public class PlayerCollisionsReactor : MonoBehaviour //Собрал в отде�
                 Destroy(other.gameObject);
                 break;
             case "Trampoline":
-                playerActions.JumpOnTrampoline(TrampolineJumpForce);
+                playerActions.jumpBooster.JumpOnTrampoline();
                 break;
             case "Slide":
                 playerActions.SlideOnSlide(SlideRotation);
                 break;
             case "End Zone":
                 playerActions.TriggerWinEvent();
+                break;
+            case "Jump Boots":
+                playerActions.jumpBooster.JumpOnBoots();
                 break;
         }
     }

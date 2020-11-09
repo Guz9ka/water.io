@@ -4,5 +4,6 @@ using UnityEngine;
 
 public interface IJumpable
 {
-    void JumpOnTrampoline(float jumpForce);
+    void JumpOnTrampoline();
+    void JumpOnBoots();
 }

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public interface IJetPack
 {
-    void TriggerJetpackUse(PlayerActions playerActions);
+    void TriggerJetpackUse(PlayerMovement playerActions);
     //IEnumerator UseJetpack();
     void FlyUp();
     void FlyForward();

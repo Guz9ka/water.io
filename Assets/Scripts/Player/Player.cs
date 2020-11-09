@@ -26,13 +26,5 @@ public class Player : MonoBehaviour
     public Vector3 velocity;
 
     protected virtual void Move() { }
-    protected virtual void CheckPlayerState() { }
-    protected virtual void Run() { }
-    protected virtual void Fall() { }
-    protected virtual void Jump() { }
-    protected virtual void PlayerDied() { }
-    protected virtual void PlayerRevived() { }
-    protected virtual void PlayerWon() { }
     public virtual void SlideOnSlide(Vector3 playerRotation) { }
-    public virtual void JumpOnTrampoline(float jumpForce) { }
 }

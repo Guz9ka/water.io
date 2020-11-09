@@ -4,6 +4,6 @@ using UnityEngine;
 
 public interface ISpeedBooster
 {
-    void TriggerSpeedBoosterUse(PlayerActions playerActions);
+    void TriggerSpeedBoosterUse(PlayerMovement playerActions);
     IEnumerator SpeedBoosterUse();
 }

@@ -2,11 +2,11 @@
 
 public class PlayerHeadCollisionsReactor : MonoBehaviour
 {
-    private PlayerActions playerBehaviour;
+    private PlayerMovement playerBehaviour;
 
     void Start()
     {
-        playerBehaviour = GetComponentInParent<PlayerActions>();
+        playerBehaviour = GetComponentInParent<PlayerMovement>();
     }
 
     private void OnCollisionEnter(Collision collision)
