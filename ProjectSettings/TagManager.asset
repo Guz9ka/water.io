@@ -16,6 +16,7 @@ TagManager:
   - Jetpack
   - Jump Boots
   - Speed Booster
+  - Enemy
   layers:
   - Default
   - TransparentFX
