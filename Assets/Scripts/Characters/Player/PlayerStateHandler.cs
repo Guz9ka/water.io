@@ -53,7 +53,7 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
     public void GroundCheck()
     {
         bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
-        bool inAir = _player.PlayerAction != PlayerCurrentAction.Jump &&
+        bool inAir = _player.PlayerAction != PlayerCurrentAction.TileJump &&
             _player.PlayerAction != PlayerCurrentAction.FlyingForward &&
             _player.PlayerAction != PlayerCurrentAction.FlyingUp;
 
@@ -77,7 +77,7 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
         if (tileLost && tileJumpAvailable && _player.PlayerAction == PlayerCurrentAction.Run)
         {
             StartCoroutine(TileJumpSwitch());
-            _player.PlayerAction = PlayerCurrentAction.Jump;
+            _player.PlayerAction = PlayerCurrentAction.TileJump;
         }
     }
     #endregion
@@ -128,7 +128,7 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
         _player.PlayerState = PlayerState.Win;
 
         _player.MoveSpeed = 0;
-        _player.joystickSensitivity = 0;
+        _player.JoystickSensitivity = 0;
         gameObject.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
     #endregion

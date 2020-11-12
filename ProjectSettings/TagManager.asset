@@ -17,6 +17,7 @@ TagManager:
   - Jump Boots
   - Speed Booster
   - Enemy
+  - Enemy Head
   layers:
   - Default
   - TransparentFX

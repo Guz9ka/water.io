@@ -299,7 +299,7 @@ public class Enemy : Character
 
     void ResetSkinRotation()
     {
-        chatacterSkin.transform.rotation = Quaternion.Euler(Vector3.zero);
+        ChatacterSkin.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
 
     void ResetRotation()

@@ -33,7 +33,7 @@ public class Trampoline : MonoBehaviour, ITrampoline
             _player.Velocity.y = Mathf.Sqrt(trampolineJumpForce * -2 * _player.gravity);
             _player.Velocity.y += _player.gravity * Time.deltaTime;
 
-            _player.controller.Move(_player.Velocity * Time.deltaTime);
+            _player.Controller.Move(_player.Velocity * Time.deltaTime);
 
             _player.PlayerAction = PlayerCurrentAction.Fall;
         }

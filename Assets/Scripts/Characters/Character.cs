@@ -4,8 +4,8 @@ using UnityEngine;
 public class Character : MonoBehaviour
 {
     [Header("Параметры игрока")]
-    protected GameObject character;
-    public GameObject chatacterSkin;
+    [SerializeField]
+    protected GameObject ChatacterSkin;
 
     public float MoveSpeed; //скорость в данный момент
     public float OriginalSpeed; //изначальный параметр скорости, к которому потом "скорость в данный момент" может вернуться
@@ -17,7 +17,6 @@ public class Character : MonoBehaviour
 
     protected virtual void Move() { }
     protected virtual void Run() { }
-    protected virtual void Jump() { }
     protected virtual void Fall() { }
     protected virtual void TileJump() { }
 }

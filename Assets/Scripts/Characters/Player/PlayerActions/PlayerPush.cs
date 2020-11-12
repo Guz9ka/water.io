@@ -14,7 +14,6 @@ enum PushDirection
 public class PlayerPush : MonoBehaviour
 {
     private Vector3 playerPosition;
-    private bool screenTouched = false;
 
     [Header("Параметры заряда")]
     [SerializeField] 
@@ -24,6 +23,7 @@ public class PlayerPush : MonoBehaviour
     private float currentCharge; //заряд в данный момент
 
     [Header("Параметры толчка")]
+    private bool screenTouched = false;
     [SerializeField] 
     private float pushDistance; //дальность толчка 
     [SerializeField] 

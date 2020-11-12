@@ -13,7 +13,7 @@ public enum PlayerCurrentAction
 {
     Run, //стандартное состояние, когда нет других команд
     Fall, //игрок в этом состоянии, когда падает вниз
-    Jump,
+    TileJump,
     JumpOnBoots,
     JumpOnTrampoline,
     FlyingUp,
@@ -28,18 +28,18 @@ public class Player : Character
 
     [Header("Локальные параметры игрока")]
     [HideInInspector]
-    public CharacterController controller;
+    public CharacterController Controller;
 
     [Header("Параметры джойстика")]
-    public FloatingJoystick joystick;
+    public FloatingJoystick Joystick;
 
+    public float JoystickSensitivity; //чувствительность джойстика в данный момент
     [SerializeField]
-    public float joystickSensitivity; //чувствительность джойстика в данный момент
+    private float joystickSensitivityOriginal; 
 
     private void Start()
     {
-        controller = GetComponent<CharacterController>();
-        character = gameObject;
+        Controller = GetComponent<CharacterController>();
         ResetCharacteristics();
 
         //states
@@ -66,7 +66,7 @@ public class Player : Character
                 Fall();
                 Run();
                 break;
-            case PlayerCurrentAction.Jump:
+            case PlayerCurrentAction.TileJump:
                 TileJump();
                 Run();
                 break;
@@ -80,28 +80,28 @@ public class Player : Character
     }
 
     #region Возможные действия игрока
-    protected override void TileJump()
-    {
-        Velocity.y = Mathf.Sqrt(JumpHeight * -2 * gravity);
-        Velocity.y += gravity * Time.deltaTime;
-
-        controller.Move(Velocity * Time.deltaTime);
-
-        PlayerAction = PlayerCurrentAction.Fall;
-    }
-
     protected override void Run()
     {
-        float moveSides = joystick.Horizontal * joystickSensitivity; //шлепнул прямой инпут т.к. другого вида ввода не предусматривается
+        float moveSides = Joystick.Horizontal * JoystickSensitivity; //шлепнул прямой инпут т.к. другого вида ввода не предусматривается
 
         Vector3 moveHorizontal = transform.forward * MoveSpeed + transform.right * moveSides;
-        controller.Move(moveHorizontal * Time.deltaTime);
+        Controller.Move(moveHorizontal * Time.deltaTime);
     }
 
     protected override void Fall()
     {
         Velocity.y += gravity * Time.deltaTime;
-        controller.Move(Velocity * Time.deltaTime);
+        Controller.Move(Velocity * Time.deltaTime);
+    }
+
+    protected override void TileJump()
+    {
+        Velocity.y = Mathf.Sqrt(JumpHeight * -2 * gravity);
+        Velocity.y += gravity * Time.deltaTime;
+
+        Controller.Move(Velocity * Time.deltaTime);
+
+        PlayerAction = PlayerCurrentAction.Fall;
     }
     #endregion
 
@@ -109,6 +109,7 @@ public class Player : Character
     {
         Velocity = Vector3.zero;
         MoveSpeed = OriginalSpeed;
-        character.transform.rotation = Quaternion.Euler(Vector3.zero);
+        JoystickSensitivity = joystickSensitivityOriginal;
+        gameObject.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
 }

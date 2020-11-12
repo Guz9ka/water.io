@@ -77,15 +77,15 @@ public class JetPack : MonoBehaviour, IJetPack
         _player.Velocity.y = Mathf.Sqrt(flyHeight * -2 * _player.gravity);
         _player.Velocity.y += _player.gravity * Time.deltaTime;
 
-        _player.controller.Move(_player.Velocity * Time.deltaTime);
+        _player.Controller.Move(_player.Velocity * Time.deltaTime);
     }
 
     public void FlyForward()
     {
-        float moveSides = _player.joystick.Horizontal * flyJoystickSensetivity;
+        float moveSides = _player.Joystick.Horizontal * flyJoystickSensetivity;
         Vector3 moveHorizontal = transform.forward * playerFlySpeed + transform.right * moveSides;
 
-        _player.controller.Move(moveHorizontal * Time.deltaTime);
+        _player.Controller.Move(moveHorizontal * Time.deltaTime);
     }
 
 }
