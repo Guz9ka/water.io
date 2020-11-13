@@ -12,7 +12,6 @@ enum DestinationSide
 public class MovingBlock : MonoBehaviour
 {
     [Header("Состояния движения блока")]
-    private bool isMoving = false;
     private float targetPositionX;
     private DestinationSide destinationSide;
 

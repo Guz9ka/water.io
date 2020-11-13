@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 enum BlockState
@@ -9,49 +8,65 @@ enum BlockState
     Fall
 }
 
-public class FallableBlock : MonoBehaviour
+public class FallableBlock : MonoBehaviour, IFallableBlock
 {
     private BlockState blockState;
 
     [Header("Задержка между выполнениями действий")]
-    public float fallDelay;
-    public float destroyDelay;
+    [SerializeField]
+    private float fallDelay;
+    [SerializeField]
+    private float destroyDelay;
 
     [Header("Скорость падения")]
-    public float fallSpeed;
+    [SerializeField]
+    private float fallSpeed;
 
     private void Start()
     {
         blockState = BlockState.Static;
     }
 
+    private void FixedUpdate()
+    {
+        if (blockState == BlockState.Fall)
+        {
+            gameObject.transform.position = new Vector3(gameObject.transform.position.x, Mathf.Lerp(gameObject.transform.position.y, 0, fallSpeed * Time.deltaTime), gameObject.transform.position.z);
+        }
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "Player" || other.tag == "Enemy" && blockState == BlockState.Static)
+        if (other.tag == "Player" || other.tag == "Enemy" && blockState == BlockState.Static)
         {
-            blockState = BlockState.Touched;
             StartCoroutine(StartDestroy());
         }
     }
 
-    private IEnumerator StartDestroy()
+    public IEnumerator StartDestroy()
     {
-        //активировать визуальный эффект
+        if(blockState == BlockState.Static)
+        {
+            blockState = BlockState.Touched;
+            SetMaterialOnTrigger();
 
-        yield return new WaitForSeconds(fallDelay);
+            yield return new WaitForSeconds(fallDelay);
 
-        blockState = BlockState.Fall;
+            blockState = BlockState.Fall;
 
-        yield return new WaitForSeconds(destroyDelay);
+            yield return new WaitForSeconds(destroyDelay);
 
-        Destroy(gameObject);
+            Destroy(gameObject);
+        }
     }
 
-    private void FixedUpdate()
+    private void SetMaterialOnTrigger()
     {
-        if(blockState == BlockState.Fall) 
-        {
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x, Mathf.Lerp(gameObject.transform.position.y, 0, fallSpeed * Time.deltaTime), gameObject.transform.position.z);
-        }
+        GetComponent<MeshRenderer>().material.color = Color.green; 
+    }
+
+    private void OnDestroy()
+    {
+        StopAllCoroutines();
     }
 }
