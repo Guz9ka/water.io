@@ -13,21 +13,23 @@ enum PushDirection
 
 public class PlayerPush : MonoBehaviour
 {
-    private Vector3 playerPosition;
+    private Vector3 _playerPosition;
+    [SerializeField]
+    private Transform _pushRangeVisual;    
 
     [Header("Параметры заряда")]
     [SerializeField] 
-    private float maxCharge; // макс. радиус
+    private float _maxCharge; // макс. радиус
     [SerializeField] 
-    private float chargeDuration; //длительность заряда
-    private float currentCharge; //заряд в данный момент
+    private float _chargeDuration; //длительность заряда
+    private float _currentCharge; //заряд в данный момент
 
     [Header("Параметры толчка")]
-    private bool screenTouched = false;
+    private bool _screenTouched = false;
     [SerializeField] 
-    private float pushDistance; //дальность толчка 
+    private float _pushDistance; //дальность толчка 
     [SerializeField] 
-    private float pushForce; //сила толчка
+    private float _pushForce; //сила толчка
 
     private void Start()
     {
@@ -37,22 +39,25 @@ public class PlayerPush : MonoBehaviour
 
     private void Update()
     {
-        playerPosition = gameObject.transform.position;
+        _playerPosition = gameObject.transform.position;
         GetInput();
+        UpdateChargeVisual();
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(playerPosition, currentCharge);
+        Gizmos.DrawWireSphere(_playerPosition, _currentCharge);
     }
 
     void GetInput()
     {
-        if (screenTouched == false && Input.GetKey(KeyCode.Space)) { screenTouched = true; } //Input.touchCount > 0
-        else if (screenTouched == true && !Input.GetKey(KeyCode.Space)) //Input.touchCount > 0
+        bool input = Input.GetKey(KeyCode.Space) || Input.touchCount > 0;
+
+        if (_screenTouched == false && input) { _screenTouched = true; }
+        else if (_screenTouched == true && !input)
         {
             Debug.Log("Push!");
-            screenTouched = false;
+            _screenTouched = false;
             GetEnemies();
             ResetCharge();
         }
@@ -60,38 +65,38 @@ public class PlayerPush : MonoBehaviour
 
     void AccumulateCharge()
     {
-        DOTween.To(() => currentCharge, x => currentCharge = x, maxCharge, chargeDuration);
+        DOTween.To(() => _currentCharge, x => _currentCharge = x, _maxCharge, _chargeDuration);
     }
 
     void GetEnemies()
     {
-        Collider[] detectedEnemies = Physics.OverlapSphere(playerPosition, currentCharge, LayerMask.GetMask("Enemy"));
+        Collider[] detectedEnemies = Physics.OverlapSphere(_playerPosition, _currentCharge, LayerMask.GetMask("Enemy"));
         
         if (detectedEnemies != null)
         {
-            foreach (var enemy in detectedEnemies)
+            foreach (Collider enemy in detectedEnemies)
             {
                 PushDirection pushDirection = GetPushDirection(enemy.transform.position);
-                DoPush(enemy.transform, pushDirection);
+                PushEnemies(enemy.transform, pushDirection);
             }
         }
     }
 
     private PushDirection GetPushDirection(Vector3 enemyPosition)
     {
-        if (enemyPosition.x < playerPosition.x) return PushDirection.Left;
+        if (enemyPosition.x < _playerPosition.x) return PushDirection.Left;
         else return PushDirection.Right;
     }
 
-    private void DoPush(Transform enemyTransform, PushDirection pushDirection)
+    private void PushEnemies(Transform enemyTransform, PushDirection pushDirection)
     {
         switch (pushDirection)
         {
             case PushDirection.Left:
-                enemyTransform.DOMoveX(enemyTransform.position.x - pushDistance, pushForce);
+                enemyTransform.DOMoveX(enemyTransform.position.x - _pushDistance, _pushForce);
                 break;
             case PushDirection.Right:
-                enemyTransform.DOMoveX(enemyTransform.position.x + pushDistance, pushForce);
+                enemyTransform.DOMoveX(enemyTransform.position.x + _pushDistance, _pushForce);
                 break;
         }
     }
@@ -99,8 +104,13 @@ public class PlayerPush : MonoBehaviour
     void ResetCharge()
     {
         DOTween.RestartAll();
-        currentCharge = 0;
+        _currentCharge = 0;
         AccumulateCharge();
+    }
+
+    void UpdateChargeVisual()
+    {
+        _pushRangeVisual.localScale = new Vector3(_currentCharge, _pushRangeVisual.localScale.y, _currentCharge);
     }
 
     void OnGameStart()

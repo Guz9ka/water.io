@@ -10,34 +10,34 @@ enum BlockState
 
 public class FallableBlock : MonoBehaviour, IFallableBlock
 {
-    private BlockState blockState;
+    private BlockState _blockState;
 
     [Header("Задержка между выполнениями действий")]
     [SerializeField]
-    private float fallDelay;
+    private float _fallDelay;
     [SerializeField]
-    private float destroyDelay;
+    private float _destroyDelay;
 
     [Header("Скорость падения")]
     [SerializeField]
-    private float fallSpeed;
+    private float _fallSpeed;
 
     private void Start()
     {
-        blockState = BlockState.Static;
+        _blockState = BlockState.Static;
     }
 
     private void FixedUpdate()
     {
-        if (blockState == BlockState.Fall)
+        if (_blockState == BlockState.Fall)
         {
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x, Mathf.Lerp(gameObject.transform.position.y, 0, fallSpeed * Time.deltaTime), gameObject.transform.position.z);
+            gameObject.transform.position = new Vector3(gameObject.transform.position.x, Mathf.Lerp(gameObject.transform.position.y, 0, _fallSpeed * Time.deltaTime), gameObject.transform.position.z);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "Player" || other.tag == "Enemy" && blockState == BlockState.Static)
+        if (other.tag == "Player" || other.tag == "Enemy" && _blockState == BlockState.Static)
         {
             StartCoroutine(StartDestroy());
         }
@@ -45,16 +45,16 @@ public class FallableBlock : MonoBehaviour, IFallableBlock
 
     public IEnumerator StartDestroy()
     {
-        if(blockState == BlockState.Static)
+        if(_blockState == BlockState.Static)
         {
-            blockState = BlockState.Touched;
+            _blockState = BlockState.Touched;
             SetMaterialOnTrigger();
 
-            yield return new WaitForSeconds(fallDelay);
+            yield return new WaitForSeconds(_fallDelay);
 
-            blockState = BlockState.Fall;
+            _blockState = BlockState.Fall;
 
-            yield return new WaitForSeconds(destroyDelay);
+            yield return new WaitForSeconds(_destroyDelay);
 
             Destroy(gameObject);
         }

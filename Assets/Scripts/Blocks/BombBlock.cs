@@ -2,12 +2,13 @@
 
 public class BombBlock : MonoBehaviour
 {
+    private bool _isExploded = false;
     [SerializeField]
-    private Material activeBombMaterial;
+    private Material _activeBombMaterial;
     [SerializeField]
-    private float triggerRadius;
+    private float _triggerRadius;
     [SerializeField]
-    private float explosionRadius;
+    private float _explosionRadius;
 
     private void Update()
     {
@@ -16,14 +17,14 @@ public class BombBlock : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawSphere(transform.position, triggerRadius);
+        Gizmos.DrawSphere(transform.position, _triggerRadius);
     }
 
     void TryTriggerBombExplode()
     {
-        bool checkSphere = Physics.CheckSphere(transform.position, triggerRadius, LayerMask.GetMask("Player", "Enemy"));
-        Debug.Log(checkSphere);
-        if (checkSphere)
+        bool checkSphere = Physics.CheckSphere(transform.position, _triggerRadius, LayerMask.GetMask("Player", "Enemy"));
+
+        if (checkSphere && !_isExploded)
         {
             BombExplode();
         }
@@ -31,7 +32,7 @@ public class BombBlock : MonoBehaviour
 
     void BombExplode()
     {
-        Collider[] fallableBlocks = Physics.OverlapSphere(transform.position, explosionRadius, LayerMask.GetMask("Ground"));
+        Collider[] fallableBlocks = Physics.OverlapSphere(transform.position, _explosionRadius, LayerMask.GetMask("Ground"));
 
         foreach (Collider fallableBlock in fallableBlocks)
         {

@@ -12,19 +12,19 @@ enum DestinationSide
 public class MovingBlock : MonoBehaviour
 {
     [Header("Состояния движения блока")]
-    private float targetPositionX;
-    private DestinationSide destinationSide;
+    private float _targetPositionX;
+    private DestinationSide _destinationSide;
 
     [Header("Параметры движения блока")]
-    private float startPositionX;
+    private float _startPositionX;
     [SerializeField]
-    private float moveDistance;
+    private float _moveDistance;
     [SerializeField]
-    private float moveDuration;
+    private float _moveDuration;
 
     private void Start()
     {
-        startPositionX = gameObject.transform.position.x;
+        _startPositionX = gameObject.transform.position.x;
         StartMoveRight();
     }
 
@@ -35,25 +35,25 @@ public class MovingBlock : MonoBehaviour
 
     void StartMoveRight()
     {
-        destinationSide = DestinationSide.Right;
+        _destinationSide = DestinationSide.Right;
 
-        targetPositionX = startPositionX + moveDistance;
-        gameObject.transform.DOMoveX(targetPositionX, moveDuration);
+        _targetPositionX = _startPositionX + _moveDistance;
+        gameObject.transform.DOMoveX(_targetPositionX, _moveDuration);
     }
 
     void StartMoveLeft()
     {
-        destinationSide = DestinationSide.Left;
+        _destinationSide = DestinationSide.Left;
 
-        targetPositionX = startPositionX - moveDistance;
-        gameObject.transform.DOMoveX(targetPositionX, moveDuration);
+        _targetPositionX = _startPositionX - _moveDistance;
+        gameObject.transform.DOMoveX(_targetPositionX, _moveDuration);
     }
 
     void CheckMoveEnd()
     {
-        if(gameObject.transform.position.x == targetPositionX)
+        if(gameObject.transform.position.x == _targetPositionX)
         {
-            switch (destinationSide)
+            switch (_destinationSide)
             {
                 case DestinationSide.Right:
                     StartMoveLeft();
