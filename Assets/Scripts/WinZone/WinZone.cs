@@ -14,6 +14,6 @@ public class WinZone : MonoBehaviour
 
     void SetPlayerWin(GameObject playerObject)
     {
-        playerObject.GetComponent<PlayerStateHandler>().TriggerWinEvent();
+        playerObject.GetComponent<ICharacterStateHandler>().TriggerWinEvent();
     }
 }

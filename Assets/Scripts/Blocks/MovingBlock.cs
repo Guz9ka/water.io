@@ -33,22 +33,6 @@ public class MovingBlock : MonoBehaviour
         CheckMoveEnd();
     }
 
-    void StartMoveRight()
-    {
-        _destinationSide = DestinationSide.Right;
-
-        _targetPositionX = _startPositionX + _moveDistance;
-        gameObject.transform.DOMoveX(_targetPositionX, _moveDuration);
-    }
-
-    void StartMoveLeft()
-    {
-        _destinationSide = DestinationSide.Left;
-
-        _targetPositionX = _startPositionX - _moveDistance;
-        gameObject.transform.DOMoveX(_targetPositionX, _moveDuration);
-    }
-
     void CheckMoveEnd()
     {
         if(gameObject.transform.position.x == _targetPositionX)
@@ -63,5 +47,21 @@ public class MovingBlock : MonoBehaviour
                     break;
             }
         }
+    }
+
+    void StartMoveRight()
+    {
+        _destinationSide = DestinationSide.Right;
+
+        _targetPositionX = _startPositionX + _moveDistance;
+        gameObject.transform.DOMoveX(_targetPositionX, _moveDuration);
+    }
+
+    void StartMoveLeft()
+    {
+        _destinationSide = DestinationSide.Left;
+
+        _targetPositionX = _startPositionX - _moveDistance;
+        gameObject.transform.DOMoveX(_targetPositionX, _moveDuration);
     }
 }

@@ -6,13 +6,9 @@ public class CharacterWaterDraw : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player Head"))
+        if (other.CompareTag("CharacterHead"))
         {
-            other.gameObject.GetComponent<PlayerStateHandler>()?.TriggerDeathEvent();
-        }
-        else if (other.CompareTag("Enemy Head"))
-        {
-            other.gameObject.GetComponent<Enemy>()?.TriggerDeathEvent();
+            other.gameObject.GetComponentInParent<ICharacterStateHandler>()?.TriggerDeathEvent();
         }
     }
 }

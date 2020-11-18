@@ -13,9 +13,10 @@ enum PushDirection
 
 public class PlayerPush : MonoBehaviour
 {
-    private Vector3 _playerPosition;
     [SerializeField]
-    private Transform _pushRangeVisual;    
+    private Transform _pushRangeVisual;
+    [SerializeField]
+    private Player _player;
 
     [Header("Параметры заряда")]
     [SerializeField] 
@@ -31,35 +32,41 @@ public class PlayerPush : MonoBehaviour
     [SerializeField] 
     private float _pushForce; //сила толчка
 
+    //[Header("Событие толчка игрока")]
+    public delegate void PlayerPushed();
+    public event PlayerPushed OnPlayerPushed;
+
     private void Start()
     {
+        _player = GetComponent<Player>();
         AccumulateCharge();
         OnGameStart();
+
+        OnPlayerPushed += GetEnemies;
+        OnPlayerPushed += ResetCharge;
     }
 
     private void Update()
     {
-        _playerPosition = gameObject.transform.position;
         GetInput();
         UpdateChargeVisual();
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireSphere(_playerPosition, _currentCharge);
+        Gizmos.DrawWireSphere(transform.position, _currentCharge);
     }
 
     void GetInput()
     {
         bool input = Input.GetKey(KeyCode.Space) || Input.touchCount > 0;
+        bool playerGrounded = _player.PlayerAction == PlayerCurrentAction.Run;
 
         if (_screenTouched == false && input) { _screenTouched = true; }
-        else if (_screenTouched == true && !input)
+        else if (_screenTouched == true && !input && playerGrounded)
         {
-            Debug.Log("Push!");
             _screenTouched = false;
-            GetEnemies();
-            ResetCharge();
+            OnPlayerPushed.Invoke();
         }
     }
 
@@ -70,7 +77,7 @@ public class PlayerPush : MonoBehaviour
 
     void GetEnemies()
     {
-        Collider[] detectedEnemies = Physics.OverlapSphere(_playerPosition, _currentCharge, LayerMask.GetMask("Enemy"));
+        Collider[] detectedEnemies = Physics.OverlapSphere(transform.position, _currentCharge, LayerMask.GetMask("Enemy"));
         
         if (detectedEnemies != null)
         {
@@ -84,7 +91,7 @@ public class PlayerPush : MonoBehaviour
 
     private PushDirection GetPushDirection(Vector3 enemyPosition)
     {
-        if (enemyPosition.x < _playerPosition.x) return PushDirection.Left;
+        if (enemyPosition.x < transform.position.x) return PushDirection.Left;
         else return PushDirection.Right;
     }
 

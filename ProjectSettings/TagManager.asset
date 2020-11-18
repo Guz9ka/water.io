@@ -4,20 +4,11 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Slide
-  - Second Tier
   - Water
-  - Player Head
   - Trampoline
-  - Obstacle
-  - Coin
-  - End Zone
-  - CheckPoint
-  - Jetpack
-  - Jump Boots
   - Speed Booster
   - Enemy
-  - Enemy Head
+  - CharacterHead
   layers:
   - Default
   - TransparentFX

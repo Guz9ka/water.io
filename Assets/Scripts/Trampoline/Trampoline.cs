@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Trampoline : MonoBehaviour, ITrampoline
 {
     private Player _player;
+    private Enemy _enemy;
 
     [Header("Параметры батута")]
     [SerializeField]
@@ -12,21 +11,31 @@ public class Trampoline : MonoBehaviour, ITrampoline
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        bool isCharacter = other.CompareTag("Player") || other.CompareTag("Enemy");
+
+        if (isCharacter)
         {
             UseTrampoline(other.gameObject);
         }
     }
 
-    void UseTrampoline(GameObject playerObject)
+    void UseTrampoline(GameObject character)
     {
-        _player = playerObject.GetComponent<Player>();
-        JumpOnTrampoline();
+        if(character.GetComponent<Player>() != null)
+        {
+            _player = character.GetComponent<Player>();
+            JumpOnTrampolinePlayer();
+        }
+        else if(character.GetComponent<Enemy>() != null)
+        {
+            _enemy = character.GetComponent<Enemy>();
+            JumpOnTrampolineEnemy();
+        }
     }
 
-    public void JumpOnTrampoline()
+    public void JumpOnTrampolinePlayer()
     {
-        if(_player != null)
+        if (_player != null)
         {
             _player.PlayerAction = PlayerCurrentAction.JumpOnTrampoline;
 
@@ -36,6 +45,21 @@ public class Trampoline : MonoBehaviour, ITrampoline
             _player.Controller.Move(_player.Velocity * Time.deltaTime);
 
             _player.PlayerAction = PlayerCurrentAction.Fall;
+        }
+    }
+
+    public void JumpOnTrampolineEnemy()
+    {
+        if(_enemy != null)
+        {
+            _enemy.Agent.enabled = false;
+
+            _enemy.Velocity.y = Mathf.Sqrt(trampolineJumpForce * -2 * _enemy.gravity);
+            _enemy.Velocity.y += _enemy.gravity * Time.deltaTime;
+
+            _enemy.controller.Move(_enemy.Velocity * Time.deltaTime);
+
+            _enemy.EnemyAction = EnemyCurrentAction.Fall;
         }
     }
 }

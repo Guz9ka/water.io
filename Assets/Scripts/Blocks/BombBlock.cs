@@ -15,11 +15,6 @@ public class BombBlock : MonoBehaviour
         TryTriggerBombExplode();
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawSphere(transform.position, _triggerRadius);
-    }
-
     void TryTriggerBombExplode()
     {
         bool checkSphere = Physics.CheckSphere(transform.position, _triggerRadius, LayerMask.GetMask("Player", "Enemy"));

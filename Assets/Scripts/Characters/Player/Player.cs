@@ -1,14 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public enum PlayerState
-{
-    Alive,
-    Dead,
-    Win,
-    Menus
-}
-
 public enum PlayerCurrentAction
 {
     Run, //стандартное состояние, когда нет других команд
@@ -23,7 +15,7 @@ public enum PlayerCurrentAction
 public class Player : Character
 {
     [Header("Положения и состояния игрока")]
-    public PlayerState PlayerState;
+    public CharacterState PlayerState;
     public PlayerCurrentAction PlayerAction;
 
     [Header("Локальные параметры игрока")]
@@ -33,9 +25,10 @@ public class Player : Character
     [Header("Параметры джойстика")]
     public FloatingJoystick Joystick;
 
+    [HideInInspector]
     public float JoystickSensitivity; //чувствительность джойстика в данный момент
     [SerializeField]
-    private float joystickSensitivityOriginal; 
+    private float joystickSensitivityDefault; 
 
     private void Start()
     {
@@ -43,13 +36,14 @@ public class Player : Character
         ResetCharacteristics();
 
         //states
-        PlayerState = new PlayerState();
+        PlayerState = new CharacterState();
         PlayerAction = new PlayerCurrentAction();
     }
 
     private void FixedUpdate()
     {
-        if (PlayerState == PlayerState.Alive)
+
+        if (PlayerState == CharacterState.Alive)
         {
             Move();
         }
@@ -108,8 +102,8 @@ public class Player : Character
     public void ResetCharacteristics()
     {
         Velocity = Vector3.zero;
-        MoveSpeed = OriginalSpeed;
-        JoystickSensitivity = joystickSensitivityOriginal;
+        MoveSpeed = MoveSpeedDefault;
+        JoystickSensitivity = joystickSensitivityDefault;
         gameObject.transform.rotation = Quaternion.Euler(Vector3.zero);
     }
 }

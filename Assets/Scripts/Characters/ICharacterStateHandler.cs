@@ -5,14 +5,17 @@ using UnityEngine;
 public interface ICharacterStateHandler
 {
     void GroundCheck();
-    void JumpCheck();
+    void TileJumpCheck();
+    IEnumerator TileJumpSwitch();
+
     void TriggerDeathEvent();
     void TriggerReviveEvent();
     void TriggerWinEvent();
-    IEnumerator TileJumpSwitch();
-    void PlayerDied();
-    void PlayerRevived();
-    void PlayerWon();
+
+    void CharacterDied();
+    void CharacterRevived();
+    void CharacterWon();
+
     void OnGameStart();
     void OnGameEnd();
 }

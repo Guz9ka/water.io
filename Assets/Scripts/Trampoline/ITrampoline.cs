@@ -4,5 +4,6 @@ using UnityEngine;
 
 public interface ITrampoline
 {
-    void JumpOnTrampoline();
+    void JumpOnTrampolinePlayer();
+    void JumpOnTrampolineEnemy();
 }

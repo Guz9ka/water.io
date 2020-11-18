@@ -36,9 +36,9 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
     {
         _player = GetComponent<Player>();
 
-        OnPlayerDied += PlayerDied;
-        OnPlayerRevive += PlayerRevived;
-        OnPlayerWin += PlayerWon;
+        OnPlayerDied += CharacterDied;
+        OnPlayerRevive += CharacterRevived;
+        OnPlayerWin += CharacterWon;
 
         groundMask = LayerMask.GetMask("Ground");
     }
@@ -46,7 +46,7 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
     private void FixedUpdate()
     {
         GroundCheck();
-        JumpCheck();
+        TileJumpCheck();
     }
 
     #region Проверка смен состояния игрока
@@ -69,7 +69,7 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
     }
 
     Vector3 tileCheckPosition;
-    public void JumpCheck()
+    public void TileJumpCheck()
     {
         tileCheckPosition = gameObject.transform.position + tileCheckOffset;
         bool tileLost = !Physics.CheckSphere(tileCheckPosition, tileCheckRadius, groundMask); //true, когда перед игроком нет тайла
@@ -109,23 +109,23 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
     #endregion
 
     #region Ответ на смену состояний игрока
-    public void PlayerDied()
+    public void CharacterDied()
     {
-        _player.PlayerState = PlayerState.Dead;
+        _player.PlayerState = CharacterState.Dead;
 
         _player.ResetCharacteristics();
     }
 
-    public void PlayerRevived()
+    public void CharacterRevived()
     {
-        _player.PlayerState = PlayerState.Alive;
+        _player.PlayerState = CharacterState.Alive;
 
         _player.ResetCharacteristics();
     }
 
-    public void PlayerWon()
+    public void CharacterWon()
     {
-        _player.PlayerState = PlayerState.Win;
+        _player.PlayerState = CharacterState.Win;
 
         _player.MoveSpeed = 0;
         _player.JoystickSensitivity = 0;
@@ -136,12 +136,12 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
     #region Реакция на смену состояния игры
     public void OnGameStart()
     {
-        _player.PlayerState = PlayerState.Alive;
+        _player.PlayerState = CharacterState.Alive;
     }
 
     public void OnGameEnd()
     {
-        _player.PlayerState = PlayerState.Menus;
+        _player.PlayerState = CharacterState.Menus;
     }
     #endregion
 }
