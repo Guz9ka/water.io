@@ -9,17 +9,17 @@ public class JetPack : MonoBehaviour, IJetPack
 
     [Header("Параметры джетпака")]
     [SerializeField]
-    private float flyHeight;
+    private float _flyHeight;
     [SerializeField]
-    private float flyUpDuration;
+    private float _flyUpDuration;
     [SerializeField]
-    private float flyDuration;
+    private float _flyDuration;
 
     [SerializeField]
-    float flyJoystickSensetivity;
+    float _flyJoystickSensetivity;
     [SerializeField]
-    float playerFlySpeed;
-    bool flyingNow = false;
+    float _playerFlySpeed;
+    bool _flyingNow = false;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -31,7 +31,7 @@ public class JetPack : MonoBehaviour, IJetPack
 
     private void FixedUpdate()
     {
-        if (flyingNow && _player != null)
+        if (_flyingNow && _player != null)
         {
             switch (_player.PlayerAction)
             {
@@ -47,7 +47,7 @@ public class JetPack : MonoBehaviour, IJetPack
 
     public void TriggerJetpackUse(GameObject playerObject)
     {
-        if (!flyingNow)
+        if (!_flyingNow)
         {
             _player = playerObject.GetComponent<Player>();
             StartCoroutine(UseJetpack());
@@ -56,25 +56,25 @@ public class JetPack : MonoBehaviour, IJetPack
 
     public IEnumerator UseJetpack()
     {
-        flyingNow = true;
+        _flyingNow = true;
 
         _player.PlayerAction = PlayerCurrentAction.FlyingUp;
         _player.gravity = -1f;
 
-        yield return new WaitForSeconds(flyUpDuration);
+        yield return new WaitForSeconds(_flyUpDuration);
 
         _player.PlayerAction = PlayerCurrentAction.FlyingForward;
         _player.gravity = -9.8f;
 
-        yield return new WaitForSeconds(flyDuration);
+        yield return new WaitForSeconds(_flyDuration);
 
         _player.PlayerAction = PlayerCurrentAction.Fall;
-        flyingNow = false;
+        _flyingNow = false;
     }
 
     public void FlyUp()
     {
-        _player.Velocity.y = Mathf.Sqrt(flyHeight * -2 * _player.gravity);
+        _player.Velocity.y = Mathf.Sqrt(_flyHeight * -2 * _player.gravity);
         _player.Velocity.y += _player.gravity * Time.deltaTime;
 
         _player.Controller.Move(_player.Velocity * Time.deltaTime);
@@ -82,8 +82,8 @@ public class JetPack : MonoBehaviour, IJetPack
 
     public void FlyForward()
     {
-        float moveSides = _player.Joystick.Horizontal * flyJoystickSensetivity;
-        Vector3 moveHorizontal = transform.forward * playerFlySpeed + transform.right * moveSides;
+        float moveSides = _player.Joystick.Horizontal * _flyJoystickSensetivity;
+        Vector3 moveHorizontal = transform.forward * _playerFlySpeed + transform.right * moveSides;
 
         _player.Controller.Move(moveHorizontal * Time.deltaTime);
     }

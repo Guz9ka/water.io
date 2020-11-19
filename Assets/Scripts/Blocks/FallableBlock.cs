@@ -62,7 +62,7 @@ public class FallableBlock : MonoBehaviour, IFallableBlock
 
     private void SetMaterialOnTrigger()
     {
-        GetComponent<MeshRenderer>().material.color = Color.green; 
+        GetComponent<MeshRenderer>().material.color = Color.red; 
     }
 
     private void OnDestroy()

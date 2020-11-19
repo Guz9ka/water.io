@@ -22,6 +22,12 @@ public class Player : Character
     [HideInInspector]
     public CharacterController Controller;
 
+    [Header("Вращение игрока в направлении движения")]
+    [SerializeField]
+    float _maxRotationAngle = 90f;
+    [SerializeField]
+    float _rotationSpeed;
+
     [Header("Параметры джойстика")]
     public FloatingJoystick Joystick;
 
@@ -80,6 +86,16 @@ public class Player : Character
 
         Vector3 moveHorizontal = transform.forward * MoveSpeed + transform.right * moveSides;
         Controller.Move(moveHorizontal * Time.deltaTime);
+
+        RotateInMoveDirection();
+    }
+
+    void RotateInMoveDirection()
+    {
+        float rotationY = Mathf.Lerp(transform.rotation.y, Joystick.Horizontal * _maxRotationAngle, _rotationSpeed * Time.deltaTime);
+        Vector3 rotation = new Vector3(transform.rotation.x, rotationY, transform.rotation.z);
+
+        transform.rotation = Quaternion.Euler(rotation);
     }
 
     protected override void Fall()
