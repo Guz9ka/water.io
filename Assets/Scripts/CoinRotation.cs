@@ -6,7 +6,7 @@ using UnityEngine;
 public class CoinRotation : MonoBehaviour
 {
     [SerializeField]
-    private float rotationSpeed;
+    private float _rotationSpeed;
 
     void FixedUpdate()
     {
@@ -15,6 +15,6 @@ public class CoinRotation : MonoBehaviour
 
     private void Rotate()
     {
-        gameObject.transform.rotation = Quaternion.Euler(0, gameObject.transform.rotation.y * rotationSpeed, 0);
+        gameObject.transform.rotation = Quaternion.Euler(0, gameObject.transform.rotation.y * _rotationSpeed, 0);
     }
 }

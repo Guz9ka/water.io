@@ -39,8 +39,8 @@ public class Trampoline : MonoBehaviour, ITrampoline
         {
             _player.PlayerAction = PlayerCurrentAction.JumpOnTrampoline;
 
-            _player.Velocity.y = Mathf.Sqrt(trampolineJumpForce * -2 * _player.gravity);
-            _player.Velocity.y += _player.gravity * Time.deltaTime;
+            _player.Velocity.y = Mathf.Sqrt(trampolineJumpForce * -2 * _player.Gravity);
+            _player.Velocity.y += _player.Gravity * Time.deltaTime;
 
             _player.Controller.Move(_player.Velocity * Time.deltaTime);
 
@@ -52,13 +52,14 @@ public class Trampoline : MonoBehaviour, ITrampoline
     {
         if(_enemy != null)
         {
+            //bug
             _enemy.Agent.enabled = false;
 
-            _enemy.Velocity.y = Mathf.Sqrt(trampolineJumpForce * -2 * _enemy.gravity);
-            _enemy.Velocity.y += _enemy.gravity * Time.deltaTime;
+            _enemy.Velocity.y = Mathf.Sqrt(trampolineJumpForce * -2 * _enemy.Gravity);
+            _enemy.Velocity.y += _enemy.Gravity * Time.deltaTime;
 
-            _enemy.controller.Move(_enemy.Velocity * Time.deltaTime);
-
+            _enemy.Controller.Move(_enemy.Velocity * Time.deltaTime);
+            
             _enemy.EnemyAction = EnemyCurrentAction.Fall;
         }
     }

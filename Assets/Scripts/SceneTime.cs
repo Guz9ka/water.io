@@ -9,8 +9,8 @@ public class SceneTime : MonoBehaviour
 
     [Header("Параметры таймера")]
     public int TimeCurrent;
-    Timer timer;
-    TimerCallback timerCallback;
+    private Timer _timer;
+    private TimerCallback _timerCallback;
 
     private void Awake()
     {
@@ -20,11 +20,11 @@ public class SceneTime : MonoBehaviour
     {
         singleton = this;
 
-        timerCallback = new TimerCallback(TimerCallback);
-        timer = new Timer(timerCallback, null, 0, 1000);
+        _timerCallback = new TimerCallback(TimerCallback);
+        _timer = new Timer(_timerCallback, null, 0, 1000);
     }
 
-    void TimerCallback(object time)
+    private void TimerCallback(object time)
     {
         TimeCurrent += 1;
     }

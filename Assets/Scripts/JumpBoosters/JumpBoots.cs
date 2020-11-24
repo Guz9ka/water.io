@@ -30,8 +30,8 @@ public class JumpBoots : MonoBehaviour, IJumpBoots
         {
             _player.PlayerAction = PlayerCurrentAction.JumpOnBoots;
 
-            _player.Velocity.y = Mathf.Sqrt(bootsJumpForce * -2 * _player.gravity);
-            _player.Velocity.y += _player.gravity * Time.deltaTime;
+            _player.Velocity.y = Mathf.Sqrt(bootsJumpForce * -2 * _player.Gravity);
+            _player.Velocity.y += _player.Gravity * Time.deltaTime;
             _player.MoveSpeed = jumpBootsForwardSpeed;
 
             _player.Controller.Move(_player.Velocity * Time.deltaTime);

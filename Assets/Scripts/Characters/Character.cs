@@ -14,6 +14,8 @@ public class Character : MonoBehaviour
     [Header("Параметры игрока")]
     [SerializeField]
     protected GameObject ChatacterSkin;
+    [HideInInspector]
+    public CharacterController Controller;
 
     [HideInInspector]
     public float MoveSpeed; //скорость в данный момент
@@ -21,7 +23,7 @@ public class Character : MonoBehaviour
     public float JumpHeight;
 
     [Header("Рассчет физики")]
-    public float gravity;
+    public float Gravity;
     public Vector3 Velocity;
 
     protected virtual void Move() { }

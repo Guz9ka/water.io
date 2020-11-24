@@ -18,15 +18,11 @@ public class Player : Character
     public CharacterState PlayerState;
     public PlayerCurrentAction PlayerAction;
 
-    [Header("Локальные параметры игрока")]
-    [HideInInspector]
-    public CharacterController Controller;
-
     [Header("Вращение игрока в направлении движения")]
     [SerializeField]
-    float _maxRotationAngle = 90f;
+    private float _maxRotationAngle = 90f;
     [SerializeField]
-    float _rotationSpeed;
+    private float _rotationSpeed;
 
     [Header("Параметры джойстика")]
     public FloatingJoystick Joystick;
@@ -40,7 +36,7 @@ public class Player : Character
     {
         Controller = GetComponent<CharacterController>();
         ResetCharacteristics();
-
+        
         //states
         PlayerState = new CharacterState();
         PlayerAction = new PlayerCurrentAction();
@@ -89,8 +85,8 @@ public class Player : Character
 
         RotateInMoveDirection();
     }
-
-    void RotateInMoveDirection()
+    
+    private void RotateInMoveDirection()
     {
         float rotationY = Mathf.Lerp(transform.rotation.y, Joystick.Horizontal * _maxRotationAngle, _rotationSpeed * Time.deltaTime);
         Vector3 rotation = new Vector3(transform.rotation.x, rotationY, transform.rotation.z);
@@ -100,14 +96,14 @@ public class Player : Character
 
     protected override void Fall()
     {
-        Velocity.y += gravity * Time.deltaTime;
+        Velocity.y += Gravity * Time.deltaTime;
         Controller.Move(Velocity * Time.deltaTime);
     }
 
     protected override void TileJump()
     {
-        Velocity.y = Mathf.Sqrt(JumpHeight * -2 * gravity);
-        Velocity.y += gravity * Time.deltaTime;
+        Velocity.y = Mathf.Sqrt(JumpHeight * -2 * Gravity);
+        Velocity.y += Gravity * Time.deltaTime;
 
         Controller.Move(Velocity * Time.deltaTime);
 

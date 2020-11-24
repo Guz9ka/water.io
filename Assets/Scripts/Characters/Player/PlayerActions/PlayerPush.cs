@@ -57,7 +57,7 @@ public class PlayerPush : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, _currentCharge);
     }
 
-    void GetInput()
+    private void GetInput()
     {
         bool input = Input.GetKey(KeyCode.Space) || Input.touchCount > 0;
         bool playerGrounded = _player.PlayerAction == PlayerCurrentAction.Run;
@@ -70,12 +70,12 @@ public class PlayerPush : MonoBehaviour
         }
     }
 
-    void AccumulateCharge()
+    private void AccumulateCharge()
     {
         DOTween.To(() => _currentCharge, x => _currentCharge = x, _maxCharge, _chargeDuration);
     }
 
-    void GetEnemies()
+    private void GetEnemies()
     {
         Collider[] detectedEnemies = Physics.OverlapSphere(transform.position, _currentCharge, LayerMask.GetMask("Enemy"));
         
@@ -108,19 +108,19 @@ public class PlayerPush : MonoBehaviour
         }
     }
 
-    void ResetCharge()
+    private void ResetCharge()
     {
         DOTween.RestartAll();
         _currentCharge = 0;
         AccumulateCharge();
     }
 
-    void UpdateChargeVisual()
+    private void UpdateChargeVisual()
     {
         _pushRangeVisual.localScale = new Vector3(_currentCharge, _pushRangeVisual.localScale.y, _currentCharge);
     }
 
-    void OnGameStart()
+    private void OnGameStart()
     {
     }
 }

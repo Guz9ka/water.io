@@ -7,16 +7,21 @@ public class EnemyStateHandler : MonoBehaviour, ICharacterStateHandler
     private Enemy _enemy;
 
     [Header("Проверка наличия земли под противником")]
-    public Transform groundChecker;
-    public float groudCheckDistance;
-    private LayerMask groundMask;
+    [SerializeField]
+    private Transform _groundChecker;
+    [SerializeField]
+    private float _groudCheckDistance;
+    private LayerMask _groundMask;
 
     [Header("Проверка тайла спереди противника")]
-    public Vector3 tileCheckOffset;
-    public float tileCheckRadius;
+    [SerializeField]
+    private Vector3 _tileCheckOffset;
+    [SerializeField]
+    private float _tileCheckRadius;
 
-    public float tileJumpDelay;
-    public bool tileJumpAvailable;
+    [SerializeField]
+    private float _tileJumpDelay;
+    private bool _tileJumpAvailable = true;
 
     //[Header("Смена состояний противника")]
     public delegate void EnemyDeath();
@@ -36,7 +41,7 @@ public class EnemyStateHandler : MonoBehaviour, ICharacterStateHandler
         OnEnemyRevive += CharacterRevived;
         OnEnemyWin += CharacterWon;
 
-        groundMask = LayerMask.GetMask("Ground");
+        _groundMask = LayerMask.GetMask("Ground");
     }
 
     void Update()
@@ -50,7 +55,7 @@ public class EnemyStateHandler : MonoBehaviour, ICharacterStateHandler
     #region Проверка состояний противника
     public void GroundCheck()
     {
-        bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
+        bool isGrounded = Physics.CheckSphere(_groundChecker.position, _groudCheckDistance, _groundMask);
 
         if (isGrounded == false)
         {
@@ -67,7 +72,7 @@ public class EnemyStateHandler : MonoBehaviour, ICharacterStateHandler
 
     public void CheckTrampoline()
     {
-        bool OnTrampoline = Physics.CheckSphere(groundChecker.position, groudCheckDistance, LayerMask.GetMask("Trampoline"));
+        bool OnTrampoline = Physics.CheckSphere(_groundChecker.position, _groudCheckDistance, LayerMask.GetMask("Trampoline"));
 
         if (OnTrampoline)
         {
@@ -78,10 +83,10 @@ public class EnemyStateHandler : MonoBehaviour, ICharacterStateHandler
     Vector3 tileCheckPosition;
     public void TileJumpCheck()
     {
-        tileCheckPosition = _enemy.transform.position + tileCheckOffset;
-        bool tileLost = !Physics.CheckSphere(tileCheckPosition, tileCheckRadius, groundMask); //true, когда перед игроком нет тайла
+        tileCheckPosition = _enemy.transform.position + _tileCheckOffset;
+        bool tileLost = !Physics.CheckSphere(tileCheckPosition, _tileCheckRadius, _groundMask); //true, когда перед игроком нет тайла
 
-        if (tileLost && tileJumpAvailable && _enemy.EnemyAction != EnemyCurrentAction.Jump && _enemy.EnemyAction != EnemyCurrentAction.Fall)
+        if (tileLost && _tileJumpAvailable && _enemy.EnemyAction != EnemyCurrentAction.Jump && _enemy.EnemyAction != EnemyCurrentAction.Fall)
         {
             StartCoroutine(TileJumpSwitch());
             _enemy.Agent.enabled = false;
@@ -93,11 +98,11 @@ public class EnemyStateHandler : MonoBehaviour, ICharacterStateHandler
 
     public IEnumerator TileJumpSwitch()
     {
-        tileJumpAvailable = false;
+        _tileJumpAvailable = false;
 
-        yield return new WaitForSeconds(tileJumpDelay);
+        yield return new WaitForSeconds(_tileJumpDelay);
 
-        tileJumpAvailable = true;
+        _tileJumpAvailable = true;
     }
 
     #region Триггеры смены состояний противника

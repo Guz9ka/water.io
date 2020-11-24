@@ -5,16 +5,19 @@ using UnityEngine;
 
 public class AnimatorValuesSetter : MonoBehaviour
 {
-    private Character character;
+    private Character _character;
     [SerializeField]
-    private Animator animator;
+    private Animator _animator;
 
     private void Start()
     {
-        GetComponent<PlayerPush>().OnPlayerPushed += PlayerPushTrigger;
+        if(GetComponent<PlayerPush>() != null)
+        {
+            GetComponent<PlayerPush>().OnPlayerPushed += PlayerPushTrigger;
+        }
 
-        character = GetComponent<Character>();
-        animator.applyRootMotion = false;
+        _character = GetComponent<Character>();
+        _animator.applyRootMotion = false;
     }
 
     private void Update()
@@ -24,12 +27,12 @@ public class AnimatorValuesSetter : MonoBehaviour
 
     private void SetAnimatorValues()
     {
-        animator.SetFloat("velocityY", character.Velocity.y);
-        animator.SetFloat("characterSpeed", character.MoveSpeed);
+        _animator.SetFloat("velocityY", _character.Velocity.y);
+        _animator.SetFloat("characterSpeed", _character.MoveSpeed);
     }
 
     private void PlayerPushTrigger()
     {
-        animator.SetTrigger("OnPlayerPushed");
+        _animator.SetTrigger("OnPlayerPushed");
     }
 }

@@ -19,15 +19,15 @@ public class WaterTide : MonoBehaviour
     }
 
     [Header("Параметры прилива")]
-    private WaterState waterState;
+    private WaterState _waterState;
     [SerializeField] 
-    private GameObject water;
+    private GameObject _water;
 
-    private Tide currentTide; 
+    private Tide _currentTide; 
     [SerializeField] 
-    private List<Tide> tides;
+    private List<Tide> _tides;
     [SerializeField] 
-    private float tideSpeed;
+    private float _tideSpeed;
 
     //[Header("Событие прилива")]
     private delegate void TideStart();
@@ -35,9 +35,9 @@ public class WaterTide : MonoBehaviour
 
     private void Start()
     {
-        currentTide = tides[0];
+        _currentTide = _tides[0];
 
-        waterState = new WaterState();
+        _waterState = new WaterState();
 
         OnTideRaising += StartTide;
     }
@@ -49,9 +49,9 @@ public class WaterTide : MonoBehaviour
 
     private void TryStartTide()
     {
-        if (tides.Count > tides.IndexOf(currentTide) + 1)
+        if (_tides.Count > _tides.IndexOf(_currentTide) + 1)
         {
-            if (SceneTime.singleton.TimeCurrent > currentTide.Time && waterState == WaterState.Static)
+            if (SceneTime.singleton.TimeCurrent > _currentTide.Time && _waterState == WaterState.Static)
             {
                 OnTideRaising.Invoke();
             }
@@ -60,19 +60,19 @@ public class WaterTide : MonoBehaviour
 
     private void StartTide()
     {
-        Vector3 waterPosition = water.transform.position;
-        Vector3 waterNewPosition = new Vector3(waterPosition.x, waterPosition.y + currentTide.Height, waterPosition.z);
+        Vector3 waterPosition = _water.transform.position;
+        Vector3 waterNewPosition = new Vector3(waterPosition.x, waterPosition.y + _currentTide.Height, waterPosition.z);
 
-        float moveDuration = tides[tides.IndexOf(currentTide) + 1].Time - currentTide.Time;
-        water.transform.DOMoveY(waterNewPosition.y, moveDuration);
+        float moveDuration = _tides[_tides.IndexOf(_currentTide) + 1].Time - _currentTide.Time;
+        _water.transform.DOMoveY(waterNewPosition.y, moveDuration);
 
         SetNextTide();
     }
 
     private void SetNextTide()
     {
-        waterState = WaterState.Static;
-        currentTide = tides[tides.IndexOf(currentTide) + 1];
+        _waterState = WaterState.Static;
+        _currentTide = _tides[_tides.IndexOf(_currentTide) + 1];
     }
 
 }

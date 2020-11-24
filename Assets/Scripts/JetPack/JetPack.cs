@@ -59,12 +59,12 @@ public class JetPack : MonoBehaviour, IJetPack
         _flyingNow = true;
 
         _player.PlayerAction = PlayerCurrentAction.FlyingUp;
-        _player.gravity = -1f;
+        _player.Gravity = -1f;
 
         yield return new WaitForSeconds(_flyUpDuration);
 
         _player.PlayerAction = PlayerCurrentAction.FlyingForward;
-        _player.gravity = -9.8f;
+        _player.Gravity = -9.8f;
 
         yield return new WaitForSeconds(_flyDuration);
 
@@ -74,8 +74,8 @@ public class JetPack : MonoBehaviour, IJetPack
 
     public void FlyUp()
     {
-        _player.Velocity.y = Mathf.Sqrt(_flyHeight * -2 * _player.gravity);
-        _player.Velocity.y += _player.gravity * Time.deltaTime;
+        _player.Velocity.y = Mathf.Sqrt(_flyHeight * -2 * _player.Gravity);
+        _player.Velocity.y += _player.Gravity * Time.deltaTime;
 
         _player.Controller.Move(_player.Velocity * Time.deltaTime);
     }

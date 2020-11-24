@@ -23,16 +23,17 @@ public class Enemy : Character
     [Header("Параметры ИИ противника")]
     public NavMeshAgent Agent;
     [SerializeField]
-    private GameObject endZone;
+    private GameObject _endZone;
 
-    public float moveForwardDistance;
-    public CharacterController controller;
+    [SerializeField]
+    private float _moveForwardDistance;
 
-    private Vector3 destination;
+    private Vector3 _destination;
 
     [Header("Поиск ближайшего батута")] //когда состояние воды - прилив
-    public float searchRadius;
-    private int trampolineMask;
+    [SerializeField]
+    private float _searchRadius;
+    private int _trampolineMask;
 
     [Header("Состояния противника")]
     public EnemyCurrentAction EnemyAction;
@@ -40,16 +41,18 @@ public class Enemy : Character
     public CharacterState EnemyState;
 
 
-    void Start()
+    private void Start()
     {
+        Controller = GetComponent<CharacterController>();
+
         EnemyAction = new EnemyCurrentAction();
         EnemyState = new CharacterState();
         EnemyTask = new EnemyCurrentTask();
 
-        trampolineMask = LayerMask.GetMask("Trampoline");
+        _trampolineMask = LayerMask.GetMask("Trampoline");
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         if(EnemyState == CharacterState.Alive)
         {
@@ -69,8 +72,8 @@ public class Enemy : Character
     #region Действия противника
     private Vector3 FindTrampoline()
     {
-        Vector3 searchPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z + searchRadius + 2);
-        Collider[] hitInfo = Physics.OverlapSphere(searchPosition, searchRadius, trampolineMask);
+        Vector3 searchPosition = new Vector3(transform.position.x, transform.position.y, transform.position.z + _searchRadius + 2);
+        Collider[] hitInfo = Physics.OverlapSphere(searchPosition, _searchRadius, _trampolineMask);
 
         Vector3 trampolinePosition = new Vector3(1000, 1000, 1000);
         foreach (var target in hitInfo)
@@ -107,7 +110,7 @@ public class Enemy : Character
         switch (EnemyTask)
         {
             case EnemyCurrentTask.FindTrampoline:
-                destination = FindTrampoline();
+                _destination = FindTrampoline();
                 EnemyTask = EnemyCurrentTask.RunToTrampoline;
                 break;
             case EnemyCurrentTask.RunToTrampoline:
@@ -115,34 +118,34 @@ public class Enemy : Character
                 // Так нужно, чтобы игрок каждый раз не искал заново батут, а лишь продолжал двигаться к уже назначеной цели
                 break;
             case EnemyCurrentTask.RunForward:
-                destination = new Vector3(enemyPosition.x, enemyPosition.y, enemyPosition.z + moveForwardDistance);
+                _destination = new Vector3(enemyPosition.x, enemyPosition.y, enemyPosition.z + _moveForwardDistance);
                 break;
         }
 
-        if (Agent.enabled == true) { Agent.SetDestination(destination); }
+        if (Agent.enabled == true) { Agent.SetDestination(_destination); }
     }
 
     protected override void Run()
     {
         Vector3 moveHorizontal = transform.forward * Agent.speed;
-        controller.Move(moveHorizontal * Time.deltaTime);
+        Controller.Move(moveHorizontal * Time.deltaTime);
     }
 
     protected override void TileJump()
     {
-        Velocity.y = Mathf.Sqrt(JumpHeight * -2 * gravity);
-        Velocity.y += gravity * Time.deltaTime;
+        Velocity.y = Mathf.Sqrt(JumpHeight * -2 * Gravity);
+        Velocity.y += Gravity * Time.deltaTime;
 
-        controller.Move(Velocity * Time.deltaTime);
+        Controller.Move(Velocity * Time.deltaTime);
 
         EnemyAction = EnemyCurrentAction.Fall;
     }
 
     protected override void Fall()
     {
-        Velocity.y += gravity * Time.deltaTime;
+        Velocity.y += Gravity * Time.deltaTime;
 
-        controller.Move(Velocity * Time.deltaTime);
+        Controller.Move(Velocity * Time.deltaTime);
     }
     #endregion
 

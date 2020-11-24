@@ -7,20 +7,20 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
 
     [Header("Находится ли игрок на земле")]
     [SerializeField]
-    private Transform groundChecker;
+    private Transform _groundChecker;
     [SerializeField]
-    private float groudCheckDistance;
-    private LayerMask groundMask;
+    private float _groudCheckDistance;
+    private LayerMask _groundMask;
 
     [Header("Проверка тайла спереди игрока")]
     [SerializeField]
-    private Vector3 tileCheckOffset;
+    private Vector3 _tileCheckOffset;
     [SerializeField]
-    private float tileCheckRadius;
+    private float _tileCheckRadius;
 
     [SerializeField]
-    private float tileJumpDelay;
-    private bool tileJumpAvailable = true;
+    private float _tileJumpDelay;
+    private bool _tileJumpAvailable = true;
 
     //[Header("Смена состояний игрока")]
     public delegate void PlayerDeath();
@@ -40,7 +40,7 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
         OnPlayerRevive += CharacterRevived;
         OnPlayerWin += CharacterWon;
 
-        groundMask = LayerMask.GetMask("Ground");
+        _groundMask = LayerMask.GetMask("Ground");
     }
 
     private void FixedUpdate()
@@ -52,7 +52,7 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
     #region Проверка смен состояния игрока
     public void GroundCheck()
     {
-        bool isGrounded = Physics.CheckSphere(groundChecker.position, groudCheckDistance, groundMask);
+        bool isGrounded = Physics.CheckSphere(_groundChecker.position, _groudCheckDistance, _groundMask);
         bool inAir = _player.PlayerAction != PlayerCurrentAction.TileJump &&
             _player.PlayerAction != PlayerCurrentAction.FlyingForward &&
             _player.PlayerAction != PlayerCurrentAction.FlyingUp;
@@ -68,22 +68,22 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
         }
     }
 
-    Vector3 tileCheckPosition;
+    private Vector3 _tileCheckPosition;
     public void TileJumpCheck()
     {
-        tileCheckPosition = gameObject.transform.position + tileCheckOffset;
-        bool tileLost = !Physics.CheckSphere(tileCheckPosition, tileCheckRadius, groundMask); //true, когда перед игроком нет тайла
+        _tileCheckPosition = gameObject.transform.position + _tileCheckOffset;
+        bool tileLost = !Physics.CheckSphere(_tileCheckPosition, _tileCheckRadius, _groundMask); //true, когда перед игроком нет тайла
 
-        if (tileLost && tileJumpAvailable && _player.PlayerAction == PlayerCurrentAction.Run)
+        if (tileLost && _tileJumpAvailable && _player.PlayerAction == PlayerCurrentAction.Run)
         {
             StartCoroutine(TileJumpSwitch());
             _player.PlayerAction = PlayerCurrentAction.TileJump;
         }
     }
     #endregion
-
+    
     #region Триггеры смены состояний игрока
-    public void TriggerDeathEvent()
+    public void TriggerDeathEvent() //bug
     {
         OnPlayerDied.Invoke();
     }
@@ -100,11 +100,11 @@ public class PlayerStateHandler : MonoBehaviour, ICharacterStateHandler
 
     public IEnumerator TileJumpSwitch()
     {
-        tileJumpAvailable = false;
+        _tileJumpAvailable = false;
 
-        yield return new WaitForSeconds(tileJumpDelay);
+        yield return new WaitForSeconds(_tileJumpDelay);
 
-        tileJumpAvailable = true;
+        _tileJumpAvailable = true;
     }
     #endregion
 

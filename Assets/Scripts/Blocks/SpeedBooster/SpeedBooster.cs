@@ -6,7 +6,7 @@ public class SpeedBooster : MonoBehaviour, ISpeedBooster
 {
     private Player _player;
 
-    private bool speedBoosterUseAvailable = true;
+    private bool _useAvailable = true;
     [SerializeField]
     private float _playerSpeed;
     [SerializeField]
@@ -22,7 +22,7 @@ public class SpeedBooster : MonoBehaviour, ISpeedBooster
 
     public void TryTriggerSpeedBoosterUse(GameObject playerObject)
     {
-        if (speedBoosterUseAvailable)
+        if (_useAvailable)
         {
             _player = playerObject.GetComponent<Player>();
             StartCoroutine(UseSpeedBooster());
@@ -40,13 +40,13 @@ public class SpeedBooster : MonoBehaviour, ISpeedBooster
 
     private void StartUse()
     {
-        speedBoosterUseAvailable = false;
+        _useAvailable = false;
         _player.MoveSpeed = _playerSpeed;
     }
 
     private void EndUse()
     {
-        speedBoosterUseAvailable = true;
+        _useAvailable = true;
         _player.MoveSpeed = _player.MoveSpeedDefault;
     }
 }
