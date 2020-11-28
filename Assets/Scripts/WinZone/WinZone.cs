@@ -6,7 +6,9 @@ public class WinZone : MonoBehaviour
 {
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player"))
+        bool isCharacter = other.CompareTag("Player") || other.CompareTag("Enemy");
+
+        if (isCharacter)
         {
             SetPlayerWin(other.gameObject);
         }
@@ -14,6 +16,6 @@ public class WinZone : MonoBehaviour
 
     void SetPlayerWin(GameObject playerObject)
     {
-        playerObject.GetComponent<ICharacterStateHandler>().TriggerWinEvent();
+        playerObject.GetComponent<ICharacterStateHandler>()?.TriggerWinEvent();
     }
 }

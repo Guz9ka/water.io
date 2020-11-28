@@ -4,6 +4,7 @@ public class Trampoline : MonoBehaviour, ITrampoline
 {
     private Player _player;
     private Enemy _enemy;
+    private Character _char;
 
     [Header("Параметры батута")]
     [SerializeField]
@@ -37,7 +38,6 @@ public class Trampoline : MonoBehaviour, ITrampoline
     {
         if (_player != null)
         {
-            _player.PlayerAction = PlayerCurrentAction.JumpOnTrampoline;
 
             _player.Velocity.y = Mathf.Sqrt(trampolineJumpForce * -2 * _player.Gravity);
             _player.Velocity.y += _player.Gravity * Time.deltaTime;

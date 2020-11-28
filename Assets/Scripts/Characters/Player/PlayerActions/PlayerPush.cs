@@ -62,7 +62,10 @@ public class PlayerPush : MonoBehaviour
         bool input = Input.GetKey(KeyCode.Space) || Input.touchCount > 0;
         bool playerGrounded = _player.PlayerAction == PlayerCurrentAction.Run;
 
-        if (_screenTouched == false && input) { _screenTouched = true; }
+        if (_screenTouched == false && input) 
+        { 
+            _screenTouched = true; 
+        }
         else if (_screenTouched == true && !input && playerGrounded)
         {
             _screenTouched = false;

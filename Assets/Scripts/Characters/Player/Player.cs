@@ -7,7 +7,6 @@ public enum PlayerCurrentAction
     Fall, //игрок в этом состоянии, когда падает вниз
     TileJump,
     JumpOnBoots,
-    JumpOnTrampoline,
     FlyingUp,
     FlyingForward
 }
@@ -101,7 +100,7 @@ public class Player : Character
     }
 
     protected override void TileJump()
-    {
+    {//bug
         Velocity.y = Mathf.Sqrt(JumpHeight * -2 * Gravity);
         Velocity.y += Gravity * Time.deltaTime;
 

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using DG.Tweening;
 using UnityEngine;
 
 enum BlockState
@@ -12,27 +13,26 @@ public class FallableBlock : MonoBehaviour, IFallableBlock
 {
     private BlockState _blockState;
 
+    [Header("Направление падения")]
+    [SerializeField]
+    private float _fallDistance;
+    [SerializeField]
+    private float _fallSpeed;
+
+    [SerializeField]
+    private Vector3 _fallRotation;
+    [SerializeField]
+    private float _rotationSpeed;
+
     [Header("Задержка между выполнениями действий")]
     [SerializeField]
     private float _fallDelay;
     [SerializeField]
     private float _destroyDelay;
 
-    [Header("Скорость падения")]
-    [SerializeField]
-    private float _fallSpeed;
-
     private void Start()
     {
         _blockState = BlockState.Static;
-    }
-
-    private void FixedUpdate()
-    {
-        if (_blockState == BlockState.Fall)
-        {
-            gameObject.transform.position = new Vector3(gameObject.transform.position.x, Mathf.Lerp(gameObject.transform.position.y, 0, _fallSpeed * Time.deltaTime), gameObject.transform.position.z);
-        }
     }
 
     private void OnTriggerEnter(Collider other)
@@ -53,11 +53,18 @@ public class FallableBlock : MonoBehaviour, IFallableBlock
             yield return new WaitForSeconds(_fallDelay);
 
             _blockState = BlockState.Fall;
+            BlockFallDown();
 
             yield return new WaitForSeconds(_destroyDelay);
 
             Destroy(gameObject);
         }
+    }
+
+    private void BlockFallDown()
+    {
+        transform.DOMoveY(_fallDistance, _fallSpeed);
+        transform.DORotate(_fallRotation, _rotationSpeed);
     }
 
     private void SetMaterialOnTrigger()
