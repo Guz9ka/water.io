@@ -63,8 +63,8 @@ public class FallableBlock : MonoBehaviour, IFallableBlock
 
     private void BlockFallDown()
     {
-        transform.DOMoveY(_fallDistance, _fallSpeed);
-        transform.DORotate(_fallRotation, _rotationSpeed);
+        transform.DOMoveY(_fallDistance, _fallSpeed).SetEase(Ease.InQuart);
+        transform.DORotate(_fallRotation, _fallSpeed, RotateMode.FastBeyond360);
     }
 
     private void SetMaterialOnTrigger()
