@@ -52,11 +52,6 @@ public class PlayerPush : MonoBehaviour
         UpdateChargeVisual();
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.DrawWireSphere(transform.position, _currentCharge);
-    }
-
     private void GetInput()
     {
         bool input = Input.GetKey(KeyCode.Space) || Input.touchCount > 0;
