@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bd97cd5aa4048c18a6c0e84aaea630f, type: 3}
+  m_Name: StandardCar
+  m_EditorClassIdentifier: 
+  Name: Drochitel
+  Cost: 228900
+  Image: {fileID: 21300000, guid: c7feef6ae1cdebe4682aa1715d276e6e, type: 3}
+  Health: 100
+  MaxWeapons: 2
+  CarPrefab: {fileID: 4679566012014375803, guid: 47960bc2faaa7c542bd5dea055e22eef,
+    type: 3}
+  Acceleration: 15
+  BoostMultiplier: 1.4
+  MaxSpeed: 30
+  GripX: 12
+  GripZ: 3
+  Rotate: 140
+  RotationVelocity: 0.7
+  MinRotationSpeed: 1
+  MaxRotationSpeed: 4
+  SlipL:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  SlipU:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  SlipMod: 10
+  AngularDragG: 5
+  AngularDragA: 0.05
+  CenterOfMass: {x: 0, y: 0.3, z: 0}

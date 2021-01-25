@@ -9,6 +9,7 @@ TagManager:
   - Speed Booster
   - Enemy
   - CharacterHead
+  - Jetpack
   layers:
   - Default
   - TransparentFX
@@ -23,7 +24,7 @@ TagManager:
   - Wall
   - Enemy
   - Player
-  - 
+  - Block
   - 
   - 
   - 
